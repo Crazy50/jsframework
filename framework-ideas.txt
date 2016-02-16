@@ -1,0 +1,75 @@
+a thought:
+will need (db) boostrap/loaders
+these things will:
+  read/take config
+  make a connection
+  set up the (db)tables to be able to query
+  because the possibility of different DBs in a project, per-db query must exist
+
+need a way to tell stores to modify for optimistic updates within methods
+
+
+what core Components are needed
+
+External libs:
+webpack
+react
+babel
+(db)
+
+
+bootstraper?
+Core:
+  Router
+  Http
+  csrf
+  cors
+  other security (csp?)
+  client-gen (generates some client code based on the Factories)
+Core-Extended:
+  cookies
+  sessions
+  polyfill-service?
+
+Factories (also in Core):
+  Type
+  Method
+  View / ViewModel
+Factories (pulled in outside or bundles)
+  (db)Table - (db) E= {Postgres, Mongo, Mongoose, RethinkDB}
+  (db)Query
+
+
+ClientSide:
+  bootstraper?
+
+
+how does the data sit server side while rendering?
+how is data stored and updated client side?
+Probably the same way for both of these ^
+- Maybe what we do is create a "Store" for any used Queries (should there be a way to clear unused stores?)
+  - ^ by itself, this could lead to two query-stores with duplicated data and maybe one not getting updated
+- Could do a per Type "Store" that stores data, then have a per-Query "Store" that stores ids in order
+- How/When do these stores get updated?
+1) stuff coming over websockets should update stores
+2) stuff coming in through fetches should update
+
+what about things that exist client-side only? maybe it's a (db)Table where (db) = Temporary, Session, Client?
+
+
+React-Components:
+Form
+Link
+
+
+Other components for the demo
+login, logout, register
+User
+Roles (maybe later)
+
+
+
+Packages:
+individual components?
+Core
+Minimal: (Core, any extra bootstraping)

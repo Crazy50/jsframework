@@ -1,0 +1,253 @@
+// types/todo.js
+export default Type({
+  owner: User, // user is assumed defined for this example
+  message: {
+    type: String,
+    validators: /\\w+/ // maybe a function, maybe an array, maybe an object with a custom error message
+  }
+});
+
+// db/todo.js
+import Todo from '../types/todo'
+export default RethinkTable({
+  name: 'todos',
+  schema: Todo,
+  timestamps: true,
+  index: [],
+
+  acl: {
+    // limit who can insert, maybe even check what they're inserting to see if they can
+    insert(newItem) {
+      return !!this.user && (newItem.owner.id === this.user || AdminRole.HasUser(user));
+    }
+
+    // limit who can remove the item, can even limit based on a field in the item
+    remove(oldItem) {
+      return oldItem.owner === this.user.id || AdminRole.HasUser(user);
+    }
+
+    // limit who can update. can go as far as deciding based on the values here
+    update(oldItem, newItem) {
+      if (AdminRole.HasUser(user)) {
+        return true;
+      }
+
+      // normal users cannot change owners
+      if (oldItem.owner !== newItem.owner) {
+        return false;
+      }
+
+      // too old, 15 minutes, to make changes
+      if (Date.now() - oldItem.createdAt.getTime() > 15*60*1000) {
+        return false;
+      }
+
+      return true;
+    }
+
+    // TODO: need to think on how to express this
+    // an automated filter that is added for any finds
+    findFilter() {
+      return AdminRole.HasUser(user) ? null : r.row('owner').eq(this.user.id); // null for no auto-filter
+    }
+
+    // limits which fields can be selected by a user for any finds
+    select() {
+      return AdminRole.HasUser(user) ? true : ['message']; // or null/false/empty array for none
+    }
+  }
+});
+
+// really need to decide on the name "queries" since they're only meant for data fetching
+// export it, because we use this thing for subscribe on either side (client just gets a different looking implementation)
+// queries/alltodos.js
+import TodoTable from '../db/todo'
+export default RethinkQuery({
+  name: 'alltodos',
+  table: TodoTable,
+
+  client: true, // assumed true unless otherwise specified
+  rest: { // useful to create a restful route. client-side doesn't use rest. maybe you have other client types
+    method: 'get',
+    url: '/todos'
+  },
+
+  // TODO: name me
+  // maybe there's a use case for queries not accessible to all users?
+  // doesn't affect what can be returned, only that this function could be used at all
+  // use the Table's ACL for control over what can be returned
+  allow: function() {
+    return !!this.user;
+  },
+
+  publisher: function() {
+    // still have the filter here, just so the admin sees only theirs with this fetcher
+    return this.table.filter(r.row('owner').eq(this.user.id)).orderBy(r.desc('createdAt'));
+  }
+});
+
+// queries/todo.js
+import TodoTable from '../db/todo'
+export default RethinkQuery({
+  name: 'todo',
+  table: TodoTable,
+
+  // no rest configured, but client is still assumed enabled
+  // no allow configured, so assumed everyone can use this query
+
+  // can be called with .once(id) or .live(id). thats how params are passed
+  publisher: function(id) {
+    // the ACL filter does take effect preventing people from seeing each other's Todos
+    return this.table.get(id);
+  }
+});
+
+// methods/todo.js
+import Todo from '../types/todo'
+import TodoTable from '../db/todo'
+const Add = Method({
+  params: [
+    {
+      name: 'message',
+      type: String
+    }
+  ],
+
+  client: {
+    rpcname: 'addtodo', // as long as it's not falsey, rpc is enabled. true/empty creates a name
+    optimistic: false
+  },
+
+  server: {
+    method: 'post',
+    url: '/addtodo',
+    redirectPost: '/'
+  },
+  handler: function(message) {
+    let item = new Todo({owner: this.user.id, message: message});
+    return TodoTable.insert(item);
+  }
+});
+const Remove = Method({
+  params: [
+    {
+      name: 'item',
+      type: Todo
+    }
+  ],
+
+  client: {
+    rpcname: true,
+    optimistic: function(item) {
+      // TODO: how to tell the internals to remove this?
+    }
+  },
+
+  server: {
+    method: 'post',
+    url: '/removetodo',
+    redirectPost: '/'
+  },
+  handler: function(item) {
+    return TodoTable.get(item.id).delete();
+  }
+});
+export {Add, Remove};
+
+// viewmodels/todo.js
+import TodosQuery from '../queries/alltodos'
+import TodoQuery from '../queries/todo'
+View({
+  method: 'get',
+  url: '/',
+  layout: 'mainlayout',
+  view: 'todolist'
+
+  pre: [], // need to do anything before?
+  post: [], // or after?
+
+  // prefetch the data. later on in life, this may be calculated from the views
+  fetch: function() {
+    return TodosQuery.once();
+  }
+});
+View({
+  method: 'get',
+  url: '/todo?id={todoid(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/)}'
+  layout: 'mainlayout',
+  view: {
+    file: 'todopage',
+    props: function() { // could be a simple object, or a function to set props per request
+      return {id: this.params.id};
+    }
+  },
+
+  fetch: function() {
+    return TodoQuery.once(this.params.id);
+  }
+})
+
+// views/mainlayout.jsx
+class MainLayout extends React {
+  render() {
+    return (
+      <div>
+        {this.props.children}
+      </div>
+    );
+  }
+};
+export default MainLayout;
+
+// views/todolist.jsx
+import TodosQuery from '../queries/alltodos'
+import {Add, Remove} from '../methods/todo'
+const Todo = (props) => {
+  return (
+    <li>{props.item.message}<button type="submit" name="id" value="{props.item.id}">Remove</button></li>
+  );
+};
+
+class TodoList extends React {
+  removetodo() {
+    Remove(this.id);
+  }
+
+  // Form is a helper that takes the method and can do it ajax or post-redirect if JS not available
+  render() {
+    return (
+      <div>
+        <Form method={Remove}>
+          <ul>
+            {this.props.todos.map(function(item){ return <Todo item={item} />; })}
+          </ul>
+        </Form>
+
+        <Form method={Add}>
+          <input type="text" name="message" ref="message" />
+          <button type="submit">Add New Todo</button>
+        </Form>
+      </div>
+    );
+  }
+};
+export default DataFetcher(TodoList, TodosQuery.live);
+
+// views/todopage.jsx
+import TodoQuery from '../queries/todo'
+import {Remove} from '../methods/todo'
+class TodoPage extends React {
+  // Link is a similar helper like Form is for methods
+  render() {
+    return (
+      <div>
+        <div>{this.props.todo.message}</div>
+        <div>Created at: {this.props.todo.createdAt}</div>
+        <div><Link method={Remove}>Delete Me</Link></div>
+      </div>
+    );
+  }
+};
+// the query will can get params from the props passed to DataFetcher, or as arguments.
+// the items can be merged (some params set as props, some as arguments) with args overwriting
+export default DataFetcher(TodoPage, TodoQuery.live);

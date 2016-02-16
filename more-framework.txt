@@ -1,0 +1,72 @@
+#server loading
+receive http
+process the body for POST requests (json or html-form) [what about files? mixed multipart?]
+process the server info into some Core-Request? What about Core-Response?
+
+#client loading
+on page-change/load event (changing the page, not really loading from server)
+process the client event into the same Core-Request (but may not have response)
+
+user/dev never really works with the response object anyway. we manage it for them. they just give us data
+the Core-Request is all they work with (in the "this"-context)
+turns out, everything except ViewModel can only execute server side when universal and secure.
+although, client-side Methods could have use cases. Think about a menu
+without JS, the menu links would navigate somewhere with the submenu as the whole page
+with JS, some interactive menu system could be built. Opening the menu requires: client-side Methods.
+granted, could be implemented as a different "Method" or "Action", but keeping the name would be nice
+also need a client-side only Store as well, because there very well could be client-side only state
+ViewModels are 100% universal all the time.
+Queries i do view as dominately more server side. but what about like a rest API? what about client-stores?
+(db)Tables could have a client-side only implementation as well
+
+Core-Request contains things like:
+  - the params (get, post, and ones in the URL)
+  - the url requested
+  - the method
+  - the original url (if any rewrites?)
+  - the original method
+  - did it come from the server-side handlers?
+    - if so, was it like a "full" asking for HTML or just whatever (xhr, rest, wants json)
+  - did it come from the client-side handlers?
+  - any cookies attached (may not exist client side)
+  - what about HTTP headers? (doesn't exist client side)
+
+responses work like:
+  - Methods / Actions
+    client has no response. they send rpc/rest call, wait for response, then do something client-side with it
+    server responds with JSON or a POST-redirect when HTTP. they're not meant for use in rendering
+  - Queries / Fetchers
+    client still doesn't use response. just requests data. the data gets fed into stores, maybe client gets a chance to tweak response
+    server just returns the data. Core handles how it's returned.
+  - ViewModel
+    client just calls the handler (like a pre-fetcher), then mounts the View
+    server does pretty much the same, generating HTML instead of DOM-manip
+
+response capabilities i havent taken into account yet:
+  - a way to enforce HTTPS
+  - cors
+  - caching
+  - file download/attachment
+  - file serving (like static)
+  - redirect
+  - rewrite url/method
+  - setting status code
+  - setting http headers
+  - cookies
+  - maybe there's some custom stuff people want to do
+      maybe take the things that can handle requests and abstract that part out.
+      people can use that api to create their own custom handlers for custom things
+      it would take "do what on client side", "do what on server side"
+      have some APIs that access the RPC, the rest stuff, etc
+  - different return types (xml, csv, etc)
+      maybe i give users an API to create output-transforms and they can attach for Accepts
+      then have a way for Methods or Queries to specify an array of acceptable output-transforms
+
+both:
+parse URL + querystring
+look in Router for handler - may need to include more advanced param validation?
+handle user session and load roles (my want a Core-Users? or is it part of Core-ACL?)
+check ACL for the route (may want a separate Core-ACL)
+validate any GET/POST params (may want a separate Core-Validation)
+create a "this"-context for the handler
+call handler with context
