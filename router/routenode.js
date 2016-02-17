@@ -30,7 +30,7 @@
   RouteNode.prototype.setParams = function(params) {
     if (!params || !params.length) {
       this.params = null;
-      this.cachedReturn = {params: [], paramsArray: [], route: this};
+      this.cachedReturn = {params: {}, route: this};
     } else {
       this.params = params;
     }

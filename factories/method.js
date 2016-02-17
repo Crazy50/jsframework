@@ -29,18 +29,19 @@ var core = require('../core');
 
 // TODO: refactor to be more compositional
 function createHandlerWrapper(options) {
-  return function wrappedHandler() {
+  var handler = options.isAsync ? Bluebird.coroutine(options.handler) : options.handler;
+
+  return function wrappedHandler(request, response) {
     // check ACL
     // check param types and validators
     // call the handler
 
-    var promise = options.isAsync ? Bluebird.coroutine(options.handler) : options.handler;
-    promise(this.params)
+    handler(request, response)
       .then(function(result) {
-        if (this.isFullRequest && options.server.redirectPost) {
+        if (request.isFullRequest && options.server.redirectPost) {
           this.redirect(options.server.redirectPost);
         } else {
-          this.send(this.outputTransform(result));
+          this.send(this.outputTransform(result)).end();
         }
       })
       .catch(function(error) {
@@ -103,12 +104,12 @@ var Method = function(options) {
   var handler = createHandlerWrapper(options);
   if (options.server) {
     // assume Methods come over post if not specified
-    var method = options.server.method || 'post';
+    var methods = options.server.methods || 'post';
     var url = options.server.url || '/api/' + name;
 
     // TODO: along with refactor, clean it up
     core.server.addRoute({
-      method: method,
+      methods: methods,
       path: url,
       handler: handler
     });

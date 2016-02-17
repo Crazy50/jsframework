@@ -202,11 +202,12 @@
   }
 
   //var retRootNode = {node: rootNode, vars: []};
-  var retRootNode = {params: [], paramsArray: [], route: rootNode};
+  var retRootNode = {params: {}, route: rootNode};
   function matchPathToNode(method, path) {
     var strLength = path.length;
 
     if (path === '/') {
+      console.log('return rootnode');
       return retRootNode;
     }
 
@@ -321,7 +322,7 @@
       return null;
     }
 
-    //var reqparams = {};
+    var reqparams = {};
     if (!dynVars.length && curNode.cachedReturn) {
       return curNode.cachedReturn;
     } else {
@@ -330,13 +331,13 @@
         return null;
       }
 
-      for (var dv = dynVars.length; dv--;) {
-        // reqparams[curNode.params[dv]] = dynVars[dv].data;
-        dynVars[dv] = dynVars[dv].data;
+      for (var dv = 0; dv < dynVars.length; dv++) {
+        reqparams[curNode.params[dv]] = dynVars[dv].data;
+        // dynVars[dv] = dynVars[dv].data;
       }
     }
 
-    return {params: curNode.params, paramsArray: dynVars, route: curNode};
+    return {params: reqparams, route: curNode};
     // return i === strLength ? {node: curNode, vars: dynVars} : null;
   }
 
@@ -377,6 +378,7 @@
         }
       }
 
+      console.log('adding a path', config.path);
       // TODO: figure out the pre/post and generate a single fn to send
       addPath(methods, config.path, config.handler, config.options);
     },
