@@ -7,11 +7,10 @@
 }(this, function(RouteNode) {
   'use strict'
 
-  // must create the initial root node. does help when '/' isn't the first declared route
-  var rootNode = new RouteNode('/');
+  /* *** Private, internal functions *** */
 
   // never pass a dynamic part to this. only static parts
-  function findNodeForAdd(startNode, path) {
+  function _findNodeForAdd(trie, startNode, path) {
     var result = {
       node: null,
       lastIndex: -1,
@@ -71,16 +70,9 @@
     return result;
   }
 
-  function addNodes(startNode, path, options) {
-    if (!startNode && !rootNode) {
-      var newNode = new RouteNode(path, null);
-      rootNode = newNode;
-
-      return rootNode;
-    }
-
+  function _addNodes(trie, startNode, path, options) {
     // get the parent node (or a node to split)
-    var result = findNodeForAdd(startNode, path);
+    var result = _findNodeForAdd(trie, startNode, path);
     var newNode = null;
 
     if (!result.node) {
@@ -133,12 +125,12 @@
     return newNode;
   }
 
-  function addPath(methods, path, handler, options) {
+  function _addPath(trie, methods, path, handler, options) {
     var lastIndex = 0;
     var dynIndex = 0;
     var endDynIndex = 0;
     var params = [];
-    var node = rootNode;
+    var node = trie.rootNode;
 
     while ((lastIndex = endDynIndex) < path.length && (dynIndex = path.indexOf('{', lastIndex)) !== -1) {
       if (path.lastIndexOf('/', dynIndex-1) < path.lastIndexOf('{', dynIndex-1)) {
@@ -162,7 +154,7 @@
       }
 
       // process the nodes leading to the DynNode
-      node = addNodes(node, path.slice(lastIndex, dynIndex), options);
+      node = _addNodes(trie, node, path.slice(lastIndex, dynIndex), options);
       if (!node) {
         // TODO: error
         return false;
@@ -186,7 +178,7 @@
 
     // if there's remaining (also if there was no dyn at all), process the rest
     if (lastIndex < path.length) {
-      node = addNodes(node, path.slice(lastIndex), options);
+      node = _addNodes(trie, node, path.slice(lastIndex), options);
     }
 
     if (!node) {
@@ -201,20 +193,56 @@
     return true;
   }
 
-  //var retRootNode = {node: rootNode, vars: []};
-  var retRootNode = {params: {}, route: rootNode};
-  function matchPathToNode(method, path) {
+  /* *** Public class/interface *** */
+
+  var TrieRouter = function TrieRouter() {
+    this.rootNode = new RouteNode('/');
+  };
+
+  TrieRouter.prototype.add = function add(config) {
+    if (!config.methods) {
+      // TODO: error
+      console.log('methods does not exist');
+      return false;
+    }
+    if (!config.path || !(typeof(config.path) === 'string')) {
+      // TODO: error
+      console.log('path does not exist or is not a string', config.path);
+      return false;
+    }
+    if (!config.handler || !(config.handler instanceof Function)) {
+      // TODO: error
+      console.log('handler does not exist or is not a function');
+      return false;
+    }
+
+    var methods = config.methods;
+    if (!(methods instanceof Array)) {
+      if (typeof(config.path) === 'string') {
+        methods = [methods];
+      } else {
+        // TODO: error
+        console.log('methods must be either an array or a string');
+        return false;
+      }
+    }
+
+    console.log('adding a path', config.path);
+    // TODO: figure out the pre/post and generate a single fn to send
+    _addPath(this, methods, config.path, config.handler, config.options);
+  };
+
+  TrieRouter.prototype.handle = function handle(method, path) {
     var strLength = path.length;
 
     if (path === '/') {
-      console.log('return rootnode');
-      return retRootNode;
+      return {params: {}, route: this.rootNode};
     }
 
     var i = 1;
     var nexti = 0;
 
-    var curNode = rootNode;
+    var curNode = this.rootNode;
     var lastNode = null;
     var matchStr = null;
     var dynStack = [];
@@ -333,93 +361,11 @@
 
       for (var dv = 0; dv < dynVars.length; dv++) {
         reqparams[curNode.params[dv]] = dynVars[dv].data;
-        // dynVars[dv] = dynVars[dv].data;
       }
     }
 
     return {params: reqparams, route: curNode};
-    // return i === strLength ? {node: curNode, vars: dynVars} : null;
   }
-
-
-  // only used for debuging help
-  function printNode(node) {
-    console.log(JSON.stringify(node, null, 2));
-  }
-
-  // public interface
-  var TrieRouter = {
-    // config now similar to Hapi
-    add: function(config) {
-      if (!config.methods) {
-        // TODO: error
-        console.log('methods does not exist');
-        return false;
-      }
-      if (!config.path || !(typeof(config.path) === 'string')) {
-        // TODO: error
-        console.log('path does not exist or is not a string', config.path);
-        return false;
-      }
-      if (!config.handler || !(config.handler instanceof Function)) {
-        // TODO: error
-        console.log('handler does not exist or is not a function');
-        return false;
-      }
-
-      var methods = config.methods;
-      if (!(methods instanceof Array)) {
-        if (typeof(config.path) === 'string') {
-          methods = [methods];
-        } else {
-          // TODO: error
-          console.log('methods must be either an array or a string');
-          return false;
-        }
-      }
-
-      console.log('adding a path', config.path);
-      // TODO: figure out the pre/post and generate a single fn to send
-      addPath(methods, config.path, config.handler, config.options);
-    },
-
-    handle: matchPathToNode,// function(path, method) {
-      // var method = request.method;//.toLowerCase();
-      // var path = request.url;
-
-      // var matchInfo = matchPathToNode(path, method);
-
-      // if (!matchInfo || !matchInfo.node) {
-      //   // TODO: 404
-      //   console.log('nothing found, 404');
-      //   return;
-      // }
-      // var route = matchInfo.route;
-
-
-      // if (!Object.keys(node.handlers).length) {
-      //   // TODO: 404
-      //   console.log('path has no handlers, 404');
-      //   return;
-      // }
-
-      // var handler = route.handlers[method];
-
-      // if (!handler) {
-      //   // TODO: check sec rules to see if we return 405 or 404/403
-      //   console.log('405 method not allowed');
-      //   return;
-      // }
-
-      // TODO: check sec rules to make sure this is ok
-      // request.params = matchInfo.vars;
-      //handler(request, result);
-    // },
-
-    print: function() {
-      printNode(rootNode);
-    }
-  };
 
   return TrieRouter;
 }));

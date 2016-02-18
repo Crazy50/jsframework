@@ -20,6 +20,30 @@ var core = require('../core');
 //   }
 // })
 
+function sendHtml(response, content) {
+  response.send(
+    '<!doctype html>\n'
+    + '<html>\n'
+      + '<head>\n'
+        + '<meta charset="utf-8">\n'
+        + '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n'
+        + '<title>page title</title>\n' // TODO how does end user set page title?
+
+        // TODO: how does end user specify the CSS and extra JS to load?
+      + '</head>\n'
+
+      + '<body>\n'
+      + '<div id="bodymount">\n'
+  )
+  .send(content)
+  .send(
+    '</div>\n'
+    //+ '<script type="text/javascript" src="public/core-client.min.js"></script>\n' // TODO: what about base urls?
+    + '</body>\n'
+    + '</html>'
+  ).end()
+}
+
 function defaultPropTransform() {
   return null;
 }
@@ -45,9 +69,7 @@ function createFetchWrapper(options) {
     fetch(request)
       .then(function(result) {
         var props = propsTransform(result);
-        response.send(
-          ReactDOM.renderToString(Layout(null, View(props)))
-        ).end();
+        sendHtml(response, ReactDOM.renderToString(Layout(null, View(props))));
       })
       .catch(function(error) {
         // TODO: gotta make sure that options has the error handler set then
@@ -59,7 +81,7 @@ function createFetchWrapper(options) {
 var ViewModel = function(options) {
   var url = options.url;
 
-  core.server.addRoute({
+  core.router.add({
     methods: 'get',
     path: url,
     handler: createFetchWrapper(options)

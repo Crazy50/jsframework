@@ -3,8 +3,7 @@
 var Keygrip = require('keygrip');
 
 var parseurl = require('parseurl');
-
-var Router = require('../router/router');
+var StaticFilesHandler = require('./server-static-files');
 
 var CoreRequest = require('./request');
 var CoreResponse = require('./server-response');
@@ -42,8 +41,7 @@ function SignedCookies(cookies, keys) {
 
 var Server = {
   // TODO: cant handle http2, https, or all 3 at the same time
-  http: require('http').createServer(_handler.bind(Server)),
-  router: Router,
+  http: require('http').createServer(_handler),
   // TODO: how to set the keys
   keys: null
 };
@@ -58,9 +56,14 @@ function _handler(req, res) {
   // what about any rewrites?
   var url = originalUrl;
 
+  if (url.indexOf('/public') === 0) {
+    StaticFilesHandler(req, res);
+    return;
+  }
+
   var urlParts = parseurl(req);
   // TODO: figure out query strings and optionals/validation
-  var routeInfo = Router.handle(method, urlParts.pathname);
+  var routeInfo = Server.router.handle(method, urlParts.pathname);
 
   var cookies = ParseCookies(req.headers.cookie);
   var signedCookies = SignedCookies(cookies, Server.keys);
@@ -102,11 +105,6 @@ function _handler(req, res) {
   }
 
   handlers[method](request, response);
-};
-
-Server.addRoute = function addRoute(options) {
-  Server.router.add(options);
-  return Server;
 };
 
 Server.listen = function listen(portNumber) {
