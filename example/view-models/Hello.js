@@ -13,7 +13,14 @@ ViewModel({
 });
 
 ViewModel({
-  url: '/{world}',
+  url: '/world/{world}',
+  params: {
+    world: {
+      validator: [
+        {validator: /^[a-zA-Z0-9]+$/, message: 'Such a weird named world!'}
+      ]
+    }
+  },
   view: {
     file: require('../views/Hello'),
     props: function(world) {

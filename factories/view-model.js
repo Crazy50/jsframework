@@ -3,7 +3,9 @@
 var Bluebird = require('bluebird');
 var React = require('react');
 var ReactDOM = require('react-dom/server');
-var core = require('../core');
+var Core = global.Core;
+
+var Validator = require('../core/validator')
 
 // ViewModel({
 //   url: '/todo/{todoid(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/)}'
@@ -31,14 +33,13 @@ function sendHtml(response, content) {
 
         // TODO: how does end user specify the CSS and extra JS to load?
       + '</head>\n'
-
       + '<body>\n'
       + '<div id="bodymount">\n'
   )
   .send(content)
   .send(
     '</div>\n'
-    //+ '<script type="text/javascript" src="public/core-client.min.js"></script>\n' // TODO: what about base urls?
+    + '<script type="text/javascript" src="public/core.js"></script>\n' // TODO: what about base urls?
     + '</body>\n'
     + '</html>'
   ).end()
@@ -56,6 +57,11 @@ function createFetchWrapper(options) {
   if (options.isAsync) {
     fetch = Bluebird.coroutine(fetch);
   }
+  var paramValidator = Validator({
+    params: options.params,
+    strict: false
+  });
+
   var propsTransform = options.view.props || defaultPropTransform;
 
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
@@ -64,6 +70,12 @@ function createFetchWrapper(options) {
   return function wrappedFetch(request, response) {
     // check ACL
     // check param types and validators
+    var validationErrors = paramValidator(request.params);
+    if (validationErrors) {
+      // TODO: better error pages
+      response.statusCode(400).send(validationErrors).end();
+      return;
+    }
     // call the handler
 
     fetch(request)
@@ -81,7 +93,7 @@ function createFetchWrapper(options) {
 var ViewModel = function(options) {
   var url = options.url;
 
-  core.router.add({
+  Core.router.add({
     methods: 'get',
     path: url,
     handler: createFetchWrapper(options)

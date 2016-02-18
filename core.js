@@ -34,4 +34,5 @@ Core.router = new TrieRouter();
 Core.server = Server;
 Server.router = Core.router;
 
+global.Core = Core;
 module.exports = Core;

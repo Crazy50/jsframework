@@ -44,7 +44,7 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
 	/*
 	what does core-client need to accomplish?
@@ -64,28 +64,25 @@
 	*/
 
 	var TrieRouter = __webpack_require__(1);
-	//var RpcClient = require('./core/rpc-client');
+	//var RpcClient = require('./rpc');
 
 	var Core = {
 	  router: new TrieRouter(),
 	  //rpc: new RpcClient()
 	};
-	console.log('created Core');
-	window.Core = Core;
+	global.Core = Core;
 
-	// window.Type = require('./factories-client/type');
-	// window.Query = require('../factories-client/query');
-	// window.Table = require('./factories-client/table');
-	window.Method = __webpack_require__(3);
-	window.ViewModel = __webpack_require__(4);
-
-	console.log('loaded factories');
+	// window.Type = require('./factories/type');
+	// window.Query = require('./factories/query');
+	// window.Table = require('./factories/table');
+	global.Method = __webpack_require__(3);
+	global.ViewModel = __webpack_require__(4);
 
 	function requireAll(r) { r.keys().forEach(r); }
+	// TODO: how to include without pathing?
 	requireAll(__webpack_require__(165));
 
-	console.log('loaded view models');
-
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 1 */
@@ -620,12 +617,12 @@
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
 	var Bluebird = __webpack_require__(5);
 	var React = __webpack_require__(8);
 	var ReactDOM = __webpack_require__(164);
-	var Core = window.Core;
+	var Core = global.Core;
 
 	function defaultPropTransform() {
 	  return null;
@@ -703,6 +700,7 @@
 
 	module.exports = ViewModel;
 
+	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
 /* 5 */

@@ -3,10 +3,10 @@
 var Keygrip = require('keygrip');
 
 var parseurl = require('parseurl');
-var StaticFilesHandler = require('./server-static-files');
+var StaticFilesHandler = require('./serve-static');
 
 var CoreRequest = require('./request');
-var CoreResponse = require('./server-response');
+var CoreResponse = require('./response');
 
 function ParseCookies(cookieHeader) {
   if (!cookieHeader || !cookieHeader.length) {

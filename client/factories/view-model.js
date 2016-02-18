@@ -3,7 +3,7 @@
 var Bluebird = require('bluebird');
 var React = require('react');
 var ReactDOM = require('react-dom');
-var Core = window.Core;
+var Core = global.Core;
 
 function defaultPropTransform() {
   return null;

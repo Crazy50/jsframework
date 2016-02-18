@@ -1,7 +1,7 @@
 'use strict';
 
 var Bluebird = require('bluebird');
-var core = require('../core');
+var Core = global.Core;
 
 // const Remove = Method({
 //   params: [

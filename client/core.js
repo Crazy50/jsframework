@@ -17,20 +17,22 @@ handle start up
 - mount React to the view
 */
 
-var TrieRouter = require('./router/router');
-//var RpcClient = require('./core/rpc-client');
+var TrieRouter = require('../router/router');
+//var Client = require('./core/client');
+//var RpcClient = require('./core/rpc');
 
 var Core = {
   router: new TrieRouter(),
+  //client: Client,
   //rpc: new RpcClient()
 };
-window.Core = Core;
+global.Core = Core;
 
-// window.Type = require('./factories-client/type');
-// window.Query = require('../factories-client/query');
-// window.Table = require('./factories-client/table');
-window.Method = require('./factories-client/method');
-window.ViewModel = require('./factories-client/view-model');
+// window.Type = require('./factories/type');
+// window.Query = require('./factories/query');
+// window.Table = require('./factories/table');
+global.Method = require('./factories/method');
+global.ViewModel = require('./factories/view-model');
 
 function requireAll(r) { r.keys().forEach(r); }
-requireAll(require.context('./example/view-models/', true, /\.js$/));
+requireAll(require.context('view-models/', true, /\.js$/));
