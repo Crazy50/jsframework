@@ -5,7 +5,9 @@ var React = require('react');
 var ReactDOM = require('react-dom/server');
 var Core = global.Core;
 
-var Validator = require('../core/validator')
+var Validator = require('../validator')
+
+var sendHtml = require('../base-html');
 
 // ViewModel({
 //   url: '/todo/{todoid(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/)}'
@@ -21,33 +23,6 @@ var Validator = require('../core/validator')
 //     return TodoQuery.once(this.params.id);
 //   }
 // })
-
-function sendHtml(response, pageTitle, pageMeta, pageCss, pageScript, content) {
-  response.send(
-    '<!doctype html>\n'
-    + '<html>\n'
-      + '<head>\n'
-        + '<meta charset="utf-8">\n'
-        + '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n'
-        + '<title>' + pageTitle + '</title>\n' // TODO how does end user set page title?
-
-        + pageMeta
-        + pageCss
-
-        // TODO: how does end user specify the CSS and extra JS to load?
-      + '</head>\n'
-      + '<body>\n'
-      + '<div id="bodymount">\n'
-  )
-  .send(content)
-  .send(
-    '</div>\n'
-    + '<script type="text/javascript" src="public/core.js"></script>\n' // TODO: what about base urls?
-    + pageScript
-    + '</body>\n'
-    + '</html>'
-  ).end()
-}
 
 function defaultPropTransform() {
   return null;
@@ -144,8 +119,12 @@ function createFetchWrapper(options) {
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
   var View = React.createFactory(options.view.file);
 
+  var errorHandler = options.errorHandler || Core.ErrorDispatcher;
+
   return function wrappedFetch(request, response) {
     // check ACL
+    // TODO: per-view ACL is good, but also having directory-wide ACL would be a welcome improvement
+
     // check param types and validators
     var validationErrors = paramValidator(request.params);
     if (validationErrors) {
@@ -153,8 +132,8 @@ function createFetchWrapper(options) {
       response.statusCode(400).send(validationErrors).end();
       return;
     }
-    // call the handler
 
+    // call the handler
     fetch(request)
       .then(function(result) {
         var props = propsTransform(result);
@@ -167,9 +146,7 @@ function createFetchWrapper(options) {
           ReactDOM.renderToString(Layout(null, View(props))));
       })
       .catch(function(error) {
-        console.log(error);
-        // TODO: gotta make sure that options has the error handler set then
-        options.errorHandler(error);
+        errorHandler(request, response, error);
       });
   };
 }

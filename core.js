@@ -14,10 +14,10 @@ var Core = {
 };
 
 var Core = function() {
-  // global.Query = require('../factories/query');
-  // global.Table = require('./factories/table');
-  global.Method = require('./factories/method');
-  global.ViewModel = require('./factories/view-model');
+  // global.Query = require('./core/factories/query');
+  // global.Table = require('./core/factories/table');
+  global.Method = require('./core/factories/method');
+  global.ViewModel = require('./core/factories/view-model');
 
   // TODO: is this really the best way??
   // also, require-all fails if the directory doesnt exist

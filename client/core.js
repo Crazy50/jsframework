@@ -28,11 +28,11 @@ var Core = {
 };
 global.Core = Core;
 
-// window.Type = require('./factories/type');
-// window.Query = require('./factories/query');
-// window.Table = require('./factories/table');
-global.Method = require('./factories/method');
-global.ViewModel = require('./factories/view-model');
+// window.Type = require('./core/factories/type');
+// window.Query = require('./core/factories/query');
+// window.Table = require('/core./factories/table');
+global.Method = require('/core./factories/method');
+global.ViewModel = require('./core/factories/view-model');
 
 function requireAll(r) { r.keys().forEach(r); }
 requireAll(require.context('view-models/', true, /\.js$/));
