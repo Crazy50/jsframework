@@ -4,6 +4,8 @@ var Bluebird = require('bluebird');
 
 ViewModel({
   url: '/',
+  pageTitle: 'Hello world!',
+
   view: {
     file: require('../views/Hello'),
     props: function(world) {
@@ -14,6 +16,10 @@ ViewModel({
 
 ViewModel({
   url: '/world/{world}',
+  pageTitle: function(request, world) {
+    return 'Hello you: ' + world;
+  },
+
   params: {
     world: {
       validator: [

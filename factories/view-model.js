@@ -22,14 +22,17 @@ var Validator = require('../core/validator')
 //   }
 // })
 
-function sendHtml(response, content) {
+function sendHtml(response, pageTitle, pageMeta, pageCss, pageScript, content) {
   response.send(
     '<!doctype html>\n'
     + '<html>\n'
       + '<head>\n'
         + '<meta charset="utf-8">\n'
         + '<meta http-equiv="X-UA-Compatible" content="IE=edge">\n'
-        + '<title>page title</title>\n' // TODO how does end user set page title?
+        + '<title>' + pageTitle + '</title>\n' // TODO how does end user set page title?
+
+        + pageMeta
+        + pageCss
 
         // TODO: how does end user specify the CSS and extra JS to load?
       + '</head>\n'
@@ -40,6 +43,7 @@ function sendHtml(response, content) {
   .send(
     '</div>\n'
     + '<script type="text/javascript" src="public/core.js"></script>\n' // TODO: what about base urls?
+    + pageScript
     + '</body>\n'
     + '</html>'
   ).end()
@@ -52,6 +56,61 @@ function defaultLayout(p, c) {
   return c;
 }
 
+// these functions exist just to function-ify strings
+function titleFetcher(title) {
+  return function() {
+    return title;
+  }
+}
+function metaFetcher(metaArr) {
+  return function() {
+    var meta = '';
+    for (var i=0; i < metaArr.length; i++) {
+      meta += '<meta'
+
+      var metaObj = metaArr[i];
+      for (var prop in metaObj) {
+        meta += ' ' + prop + '="' + metaObj[prop] + '"';
+      }
+
+      // TODO: what about XHTML or others that require closing tags? vs html5 that requires not-closing?
+      meta += '>';
+    }
+    return meta;
+  }
+}
+function cssFetcher(css) {
+  return function() {
+    // TODO: how to handle the subdirs/base?
+    return '<link href="/public/' + css + '" rel="stylesheet" type="text/css">\n'
+  }
+}
+function cssArrayFetcher(cssArray) {
+  return function() {
+    var css = '';
+    for (var i=0; i < cssArray.length; i++) {
+      css += cssFetcher(cssArray[i])();
+    }
+    return css;
+  }
+}
+function scriptFetcher(script) {
+  return function() {
+    // TODO: how to handle the subdirs/base?
+    return '<script type="text/javascript" src="/public/' + script + '"></script>\n'
+  }
+}
+function scriptArrayFetcher(scriptArray) {
+  var script = '';
+  for (var i=0; i < scriptArray.length; i++) {
+    script += scriptFetcher(scriptArray[i])();
+  }
+  return script;
+}
+function emptyOutputer() {
+  return '';
+}
+
 function createFetchWrapper(options) {
   var fetch = options.fetch || Bluebird.resolve;
   if (options.isAsync) {
@@ -61,6 +120,24 @@ function createFetchWrapper(options) {
     params: options.params,
     strict: false
   });
+
+  var pageTitle = options.pageTitle || emptyOutputer;
+  var pageMeta = options.pageMeta || emptyOutputer;
+  var pageCss = options.pageCss || emptyOutputer;
+  var pageScript = options.pageScript || emptyOutputer;
+
+  if (!(pageTitle instanceof Function)) {
+    pageTitle = titleFetcher(pageTitle);
+  }
+  if (!(pageMeta instanceof Function)) {
+    pageMeta = metaFetcher(pageMeta);
+  }
+  if (!(pageCss instanceof Function)) {
+    pageCss = (pageCss instanceof Array ? cssArrayFetcher(pageCss) : cssFetcher(pageCss));
+  }
+  if (!(pageScript instanceof Function)) {
+    pageScript = (pageScript instanceof Array ? scriptArrayFetcher(pageScript) : scriptFetcher(pageScript));
+  }
 
   var propsTransform = options.view.props || defaultPropTransform;
 
@@ -81,9 +158,16 @@ function createFetchWrapper(options) {
     fetch(request)
       .then(function(result) {
         var props = propsTransform(result);
-        sendHtml(response, ReactDOM.renderToString(Layout(null, View(props))));
+        sendHtml(
+          response,
+          pageTitle(request, result),
+          pageMeta(request, result),
+          pageCss(request, result),
+          pageScript(request, result),
+          ReactDOM.renderToString(Layout(null, View(props))));
       })
       .catch(function(error) {
+        console.log(error);
         // TODO: gotta make sure that options has the error handler set then
         options.errorHandler(error);
       });
