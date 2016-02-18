@@ -1,10 +1,26 @@
 'use strict';
-// TODO: magic globals soon. i know. globals. deal with it.
-var ViewModel = require('../../factories/view-model');
+
+var Bluebird = require('bluebird');
 
 ViewModel({
   url: '/',
   view: {
-    file: require('../views/Hello')
+    file: require('../views/Hello'),
+    props: function(world) {
+      return {world: 'world(default)'};
+    }
+  }
+});
+
+ViewModel({
+  url: '/{world}',
+  view: {
+    file: require('../views/Hello'),
+    props: function(world) {
+      return {world: world};
+    }
+  },
+  fetch: function(request) {
+    return Bluebird.resolve(request.params.world);
   }
 });

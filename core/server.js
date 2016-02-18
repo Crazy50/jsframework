@@ -39,28 +39,20 @@ function SignedCookies(cookies, keys) {
   return signedCookies;
 }
 
-var Server = function Server(options) {
-  options = options || {};
 
-  this.http = require('http').createServer(this._handler.bind(this));
-
-  // TODO maybe make this not a singleton... yeah
-  // maybe even split tries by method
-  this.router = Router;
-
-  if (options.keys) {
-    if (Array.isArray(keys)) {
-      this.keys = new Keygrip(keys)
-    } else if (keys instanceof Keygrip) {
-      this.keys = keys;
-    }
-  }
+var Server = {
+  // TODO: cant handle http2, https, or all 3 at the same time
+  http: require('http').createServer(_handler.bind(Server)),
+  router: Router,
+  // TODO: how to set the keys
+  keys: null
 };
 
-Server.prototype._handler = function _handler(req, res) {
+function _handler(req, res) {
   var originalUrl = req.url;
   var method = req.method.toLowerCase();
 
+  // TODO: better request logging
   console.log(method, ':', originalUrl);
 
   // what about any rewrites?
@@ -68,13 +60,13 @@ Server.prototype._handler = function _handler(req, res) {
 
   var urlParts = parseurl(req);
   // TODO: figure out query strings and optionals/validation
-  var routeInfo = this.router.handle(method, urlParts.pathname);
+  var routeInfo = Router.handle(method, urlParts.pathname);
 
   var cookies = ParseCookies(req.headers.cookie);
-  var signedCookies = SignedCookies(cookies, this.keys);
+  var signedCookies = SignedCookies(cookies, Server.keys);
 
   var request = new CoreRequest({
-    server: this,
+    server: Server,
     request: req,
 
     originalUrl: originalUrl,
@@ -92,7 +84,7 @@ Server.prototype._handler = function _handler(req, res) {
     isClient: false,
     isFullRequest: true // TODO: if it's XHR or Accept isnt html
   });
-  var response = new CoreResponse(this, res);
+  var response = new CoreResponse(Server, res);
 
   if (!routeInfo) {
     // TODO: need configurable 404s and other errors
@@ -112,15 +104,17 @@ Server.prototype._handler = function _handler(req, res) {
   handlers[method](request, response);
 };
 
-Server.prototype.addRoute = function addRoute(options) {
-  this.router.add(options);
+Server.addRoute = function addRoute(options) {
+  Server.router.add(options);
+  return Server;
 };
 
-Server.prototype.listen = function listen(portNumber) {
-  this.http.listen(portNumber);
+Server.listen = function listen(portNumber) {
+  Server.http.listen(portNumber);
+  return Server;
 };
 
-Server.prototype.signCookie = function signCookie(cookieValue) {
+Server.signCookie = function signCookie(cookieValue) {
   return this.keys.sign(cookieValue);
 };
 
