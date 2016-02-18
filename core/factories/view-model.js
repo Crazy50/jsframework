@@ -134,7 +134,7 @@ function createFetchWrapper(options) {
     }
 
     // call the handler
-    fetch(request)
+    fetch.bind(request)()
       .then(function(result) {
         var props = propsTransform(result);
         sendHtml(

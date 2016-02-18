@@ -81,8 +81,8 @@ Response.prototype.cookie = function(options) {
   return this;
 };
 
-Response.prototype.redirect = function(path, statusCode) {
-  return this.statusCode(statusCode || 302).header('location', path);
+Response.prototype.redirect = function(path, code) {
+  return this.statusCode(code || 302).header('location', path);
 };
 
 Response.prototype.encoding = function(encoding) {
@@ -99,7 +99,7 @@ Response.prototype.charset = function(charset) {
 
 Response.prototype.send = function(data) {
   if (!this.response.headersSent) {
-    this.response.writeHead(this.statusCode, this.headers);
+    this.response.writeHead(this.status, this.headers);
   }
 
   this.response.write(data);
@@ -107,6 +107,10 @@ Response.prototype.send = function(data) {
 };
 
 Response.prototype.end = function() {
+  if (!this.response.headersSent) {
+    this.response.writeHead(this.status, this.headers);
+  }
+
   this.response.end();
   return this;
 };

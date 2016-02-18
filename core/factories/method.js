@@ -22,26 +22,30 @@ var Core = global.Core;
 //     url: '/removetodo',
 //     redirectPost: '/'
 //   },
-//   handler: function(params) {
-//     return TodoTable.get(item.id).delete();
+//   handler: function() {
+//     return TodoTable.get(this.params.item.id).delete();
 //   }
 // });
 
 // TODO: refactor to be more compositional
 function createHandlerWrapper(options) {
   var handler = options.isAsync ? Bluebird.coroutine(options.handler) : options.handler;
+  var transform = options.outputTransform || JSON.stringify;
 
   return function wrappedHandler(request, response) {
     // check ACL
     // check param types and validators
     // call the handler
 
-    handler(request, response)
+    handler.bind(request)()
       .then(function(result) {
         if (request.isFullRequest && options.server.redirectPost) {
-          this.redirect(options.server.redirectPost);
+          response.redirect(options.server.redirectPost).end();
         } else {
-          this.send(this.outputTransform(result)).end();
+          if (result !== undefined) {
+            response.send(transform(result));
+          }
+          response.end();
         }
       })
       .catch(function(error) {

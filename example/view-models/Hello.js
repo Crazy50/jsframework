@@ -33,7 +33,7 @@ ViewModel({
       return {world: world};
     }
   },
-  fetch: function(request) {
-    return Bluebird.resolve(request.params.world);
+  fetch: function() {
+    return Bluebird.resolve(this.params.world);
   }
 });

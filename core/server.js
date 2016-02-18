@@ -85,7 +85,7 @@ function _handler(req, res) {
     // protocol
     isServer: true,
     isClient: false,
-    isFullRequest: true // TODO: if it's XHR or Accept isnt html
+    isFullRequest: false // TODO: if it's XHR or Accept isnt html
   });
   var response = new CoreResponse(Server, res);
 
