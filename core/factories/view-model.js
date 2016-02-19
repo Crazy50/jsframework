@@ -11,6 +11,7 @@ var sendHtml = require('../base-html');
 
 // ViewModel({
 //   url: '/todo/{todoid(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89ABab][0-9a-fA-F]{3}-[0-9a-fA-F]{12}/)}'
+//   pageTitle: 'title',
 //   layout: 'mainlayout',
 //   view: {
 //     file: 'todopage',
@@ -19,10 +20,35 @@ var sendHtml = require('../base-html');
 //     }
 //   },
 //
+//   errorPages: {
+//     4xx: 'errors/custom400',
+//     401: function(request, response) {
+//       Session.set('returnto', this.url);
+//       Flash.error('You must be logged in to continue');
+//       response.redirect('/signin');
+//     },
+//     5xx: {
+//       layout: 'errors/customlayout',
+//       view: 'errors/custom500'
+//     },
+//     x: { // because catch all
+//       view: function(request, response, error) {
+//         return 'errors/customerror'; // for super customizability
+//       }
+//     }
+//   }
+//
 //   fetch: function() {
 //     return TodoQuery.once(this.params.id);
 //   }
-// })
+// });
+
+// TODO: what about a directory-wide "pre/post" fetch that can fetch common things on pages?
+// or maybe somehow ViewModel extending another ViewModel?
+
+// TODO: could use like a pre/post handlers along with directory-wide or site-wide capability
+// would be useful for things like logging response times and just whatever else someone comes up with
+// these handlers could also be used for fetching and solve the above todo
 
 function defaultPropTransform() {
   return null;
