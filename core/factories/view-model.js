@@ -139,10 +139,10 @@ function createFetchWrapper(options) {
         var props = propsTransform(result);
         sendHtml(
           response,
-          pageTitle(request, result),
-          pageMeta(request, result),
-          pageCss(request, result),
-          pageScript(request, result),
+          pageTitle.bind(request)(result),
+          pageMeta.bind(request)(result),
+          pageCss.bind(request)(result),
+          pageScript.bind(request)(result),
           ReactDOM.renderToString(Layout(null, View(props))));
       })
       .catch(function(error) {

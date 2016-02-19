@@ -20,7 +20,7 @@ module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageS
   .send(content)
   .send(
     '</div>\n'
-    + '<script type="text/javascript" src="public/core.js"></script>\n' // TODO: what about base urls?
+    + '<script type="text/javascript" src="/public/core.js"></script>\n' // TODO: what about base urls?
     + pageScript
     + '</body>\n'
     + '</html>'

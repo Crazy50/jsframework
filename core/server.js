@@ -65,6 +65,10 @@ function _handler(req, res) {
   // TODO: figure out query strings and optionals/validation
   var routeInfo = Server.router.handle(method, urlParts.pathname);
 
+  // TODO: need to figure out how to process POST vars and GET vars
+  // into the params
+
+
   var cookies = ParseCookies(req.headers.cookie);
   var signedCookies = SignedCookies(cookies, Server.keys);
 

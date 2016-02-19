@@ -3,6 +3,8 @@
 var Bluebird = require('bluebird');
 var Core = global.Core;
 
+var Validator = require('../validator')
+
 // const Remove = Method({
 //   params: [
 //     {
@@ -27,20 +29,44 @@ var Core = global.Core;
 //   }
 // });
 
+function plainRedirect(redirecto) {
+  return function() {
+    return redirecto;
+  }
+}
+
 // TODO: refactor to be more compositional
 function createHandlerWrapper(options) {
   var handler = options.isAsync ? Bluebird.coroutine(options.handler) : options.handler;
   var transform = options.outputTransform || JSON.stringify;
 
+  var redirecter = options.server.redirectPost;
+  if (!(redirecter instanceof Function)) {
+    redirecter = plainRedirect(redirecter);
+  }
+
+  var paramValidator = Validator({
+    params: options.params,
+    strict: false
+  });
+
   return function wrappedHandler(request, response) {
     // check ACL
     // check param types and validators
-    // call the handler
+    var validationErrors = paramValidator(request.params);
+    if (validationErrors) {
+      // TODO: better error pages
+      response.statusCode(400).send(validationErrors).end();
+      return;
+    }
 
+    // call the handler
     handler.bind(request)()
       .then(function(result) {
         if (request.isFullRequest && options.server.redirectPost) {
-          response.redirect(options.server.redirectPost).end();
+          // TODO: what should default be? or maybe force something to exist?
+          var redirectTo = redirecter.bind(request)(result) || '/';
+          response.redirect(redirectTo).end();
         } else {
           if (result !== undefined) {
             response.send(transform(result));
@@ -56,7 +82,19 @@ function createHandlerWrapper(options) {
 }
 
 function createClientWrapper(initialHandler, options) {
+  var paramValidator = Validator({
+    params: options.params,
+    strict: false
+  });
+
   return function wrappedClient() {
+    // check param types and validators
+    var validationErrors = paramValidator(request.params);
+    if (validationErrors) {
+      // TODO: somehow call up the error page
+      return;
+    }
+
     var action = initialHandler.apply(null, arguments);
 
     if (options.client.handler) {
@@ -84,14 +122,14 @@ var Method = function(options) {
   // if client, return a function that performs all the actions
   // core.client only exists on the client-side
   // core.rpc is on both sides, but is a different thing on either side
-  if (core.client) {
+  if (Core.client) {
     if (options.client) {
       if (options.handler) {
-        return createClientWrapper(core.rpc.createrCaller({name: name, params: options.params}), options);
+        return createClientWrapper(Core.rpc.createrCaller({name: name, params: options.params}), options);
       }
       else if (options.client.rest) {
         // a rest call to some URL
-        return createClientWrapper(core.rest.createrCaller(options.client.rest.url), options);
+        return createClientWrapper(Core.rest.createrCaller(options.client.rest.url), options);
       }
       else {
         // not making any external call, just doing something internally
@@ -112,7 +150,7 @@ var Method = function(options) {
     var url = options.server.url || '/api/' + name;
 
     // TODO: along with refactor, clean it up
-    core.server.addRoute({
+    Core.router.add({
       methods: methods,
       path: url,
       handler: handler
@@ -121,7 +159,7 @@ var Method = function(options) {
 
   if (options.client) {
     if (options.client) {
-      core.rpc.addCall({
+      Core.rpc.addCall({
         name: name,
         params: options.params,
         handler: handler

@@ -5,6 +5,8 @@ function defaultMessage(prop) {
 }
 
 // TODO: maybe a way to reference the value within the message?
+// more TODO: refactor so certain Types have certain validators available
+// and also handle string, number, etc
 function confirmValidator(value, validator, message) {
   // we don't handle Array here, only at the top most level
   if (validator instanceof RegExp) {
@@ -74,7 +76,10 @@ var Validator = function Validator(options) {
           }
         }
       } else {
-        throw new Exception('Invalid param validator');
+        var ret = confirmValidator(val, paramInfo, defaultMessage(prop));
+        if (ret) {
+          return ret;
+        }
       }
     }
 

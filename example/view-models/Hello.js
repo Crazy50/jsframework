@@ -16,7 +16,7 @@ ViewModel({
 
 ViewModel({
   url: '/world/{world}',
-  pageTitle: function(request, world) {
+  pageTitle: function(world) {
     return 'Hello you: ' + world;
   },
 
