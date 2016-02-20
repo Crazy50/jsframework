@@ -3,6 +3,9 @@
 var Keygrip = require('keygrip');
 
 var parseurl = require('parseurl');
+var getRawBody = require('raw-body');
+var qs = require('qs');
+
 var StaticFilesHandler = require('./serve-static');
 
 var CoreRequest = require('./request');
@@ -62,53 +65,86 @@ function _handler(req, res) {
   }
 
   var urlParts = parseurl(req);
+  var getParams = qs.parse(urlParts.query);
   // TODO: figure out query strings and optionals/validation
   var routeInfo = Server.router.handle(method, urlParts.pathname);
 
-  // TODO: need to figure out how to process POST vars and GET vars
-  // into the params
+  // TODO: really, really should refactor this to avoid callback hell
+  // TODO: also, more body types like JSON
+  // what about file uploads too?
+  getRawBody(req, {
+    length: req.headers['content-length'],
+    encoding: 'utf8',
+    limit: '1mb'
+  }, function(err, string) {
+    if (err) {
+      response.statusCode(400).send('Invalid request').end();
+      return;
+    }
 
+    var bodyParams;
+    try {
+       bodyParams = qs.parse(string);
+    } catch (err) {
+      response.statusCode(400).send('Invalid request').end();
+      return;
+    }
 
-  var cookies = ParseCookies(req.headers.cookie);
-  var signedCookies = SignedCookies(cookies, Server.keys);
+    var cookies = ParseCookies(req.headers.cookie);
+    var signedCookies = SignedCookies(cookies, Server.keys);
 
-  var request = new CoreRequest({
-    server: Server,
-    request: req,
+    // TODO: probably something more efficient here
+    var params = {};
+    for (var prop in getParams) {
+      params[prop] = getParams[prop];
+    }
+    for (var prop in bodyParams) {
+      params[prop] = bodyParams[prop];
+    }
+    if (routeInfo && routeInfo.params) {
+      for (var prop in routeInfo.params) {
+        params[prop] = routeInfo.params[prop];
+      }
+    }
 
-    originalUrl: originalUrl,
+    var request = new CoreRequest({
+      server: Server,
+      request: req,
 
-    cookies: cookies,
-    signedCookies: signedCookies,
+      originalUrl: originalUrl,
 
-    method: method,
-    params: routeInfo ? routeInfo.params : {},
-    path: urlParts.pathname,
-    query: urlParts.query,
-    // host
-    // protocol
-    isServer: true,
-    isClient: false,
-    isFullRequest: false // TODO: if it's XHR or Accept isnt html
+      cookies: cookies,
+      signedCookies: signedCookies,
+
+      method: method,
+      params: params,
+      path: urlParts.pathname,
+      query: urlParts.query,
+      // host
+      // protocol
+      isServer: true,
+      isClient: false,
+      isFullRequest: false // TODO: if it's XHR or Accept isnt html
+    });
+    var response = new CoreResponse(Server, res);
+
+    if (!routeInfo) {
+      // TODO: need configurable 404s and other errors
+      response.statusCode(404).send('Route not found').end();
+      return;
+    }
+
+    var handlers = routeInfo.route.handlers;
+
+    // TODO: have to get with the method? no bueno
+    if (!handlers || !handlers[method]) {
+      // TODO: need configurable 404s and other errors
+      response.statusCode(404).send('Route not found').end();
+      return;
+    }
+
+    handlers[method](request, response);
   });
-  var response = new CoreResponse(Server, res);
-
-  if (!routeInfo) {
-    // TODO: need configurable 404s and other errors
-    response.statusCode(404).send('Route not found').end();
-    return;
-  }
-
-  var handlers = routeInfo.route.handlers;
-
-  // TODO: have to get with the method? no bueno
-  if (!handlers || !handlers[method]) {
-    // TODO: need configurable 404s and other errors
-    response.statusCode(404).send('Route not found').end();
-    return;
-  }
-
-  handlers[method](request, response);
 };
 
 Server.listen = function listen(portNumber) {
