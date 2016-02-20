@@ -145,9 +145,9 @@ function createFetchWrapper(options) {
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
   var View = React.createFactory(options.view.file);
 
-  var errorHandler = options.errorHandler || Core.ErrorDispatcher;
+  var errorHandler = options.errorHandler;
 
-  return function wrappedFetch(request, response) {
+  return function wrappedFetch(request, response, next) {
     // check ACL
     // TODO: per-view ACL is good, but also having directory-wide ACL would be a welcome improvement
 
@@ -155,7 +155,7 @@ function createFetchWrapper(options) {
     var validationErrors = paramValidator(request.params);
     if (validationErrors) {
       // TODO: better error pages
-      response.statusCode(400).send(validationErrors).end();
+      response.status(400).send(validationErrors);
       return;
     }
 
@@ -172,7 +172,8 @@ function createFetchWrapper(options) {
           ReactDOM.renderToString(Layout(null, View(props))));
       })
       .catch(function(error) {
-        errorHandler(request, response, error);
+        // TODO: per-view error handlers
+        next(error);
       });
   };
 }

@@ -56,7 +56,7 @@ function createHandlerWrapper(options) {
     var validationErrors = paramValidator(request.params);
     if (validationErrors) {
       // TODO: better error pages
-      response.statusCode(400).send(validationErrors).end();
+      response.status(400).send(validationErrors);
       return;
     }
 
@@ -66,17 +66,14 @@ function createHandlerWrapper(options) {
         if (request.isFullRequest && options.server.redirectPost) {
           // TODO: what should default be? or maybe force something to exist?
           var redirectTo = redirecter.bind(request)(result) || '/';
-          response.redirect(redirectTo).end();
+          response.redirect(redirectTo);
         } else {
-          if (result !== undefined) {
-            response.send(transform(result));
-          }
-          response.end();
+          response.send(result !== undefined ? transform(result) : {});
         }
       })
       .catch(function(error) {
-        // TODO: gotta make sure that options has the error handler set then
-        options.errorHandler(error);
+        // TODO: custom error handlers
+        next(error);
       });
   };
 }

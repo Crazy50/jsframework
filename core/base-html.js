@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageScript, content) {
+  // TODO: maybe dot or something would be better for this
   response.send(
     '<!doctype html>\n'
     + '<html>\n'
@@ -16,13 +17,11 @@ module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageS
       + '</head>\n'
       + '<body>\n'
       + '<div id="bodymount">\n'
+      + content
+      + '</div>\n'
+      + '<script type="text/javascript" src="/public/core.js"></script>\n' // TODO: what about base urls?
+      + pageScript
+      + '</body>\n'
+      + '</html>'
   )
-  .send(content)
-  .send(
-    '</div>\n'
-    + '<script type="text/javascript" src="/public/core.js"></script>\n' // TODO: what about base urls?
-    + pageScript
-    + '</body>\n'
-    + '</html>'
-  ).end()
 }

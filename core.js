@@ -31,8 +31,7 @@ var Core = function() {
 };
 
 Core.router = new TrieRouter();
-Core.server = Server;
-Server.router = Core.router;
+Core.server = Server();
 
 global.Core = Core;
 module.exports = Core;
