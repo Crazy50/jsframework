@@ -162,14 +162,21 @@ function createFetchWrapper(options) {
     // call the handler
     fetch.bind(request)()
       .then(function(result) {
-        var props = propsTransform(result);
-        sendHtml(
-          response,
-          pageTitle.bind(request)(result),
-          pageMeta.bind(request)(result),
-          pageCss.bind(request)(result),
-          pageScript.bind(request)(result),
-          ReactDOM.renderToString(Layout(null, View(props))));
+        if (request.isFullRequest) {
+          var props = propsTransform(result);
+          sendHtml(
+            response,
+            pageTitle.bind(request)(result),
+            pageMeta.bind(request)(result),
+            pageCss.bind(request)(result),
+            pageScript.bind(request)(result),
+            ReactDOM.renderToString(Layout(null, View(props))),
+            result,
+            null // TODO: stores, one day...
+          );
+        } else {
+          response.send(result);
+        }
       })
       .catch(function(error) {
         // TODO: per-view error handlers

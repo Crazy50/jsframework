@@ -1,6 +1,7 @@
 'use strict';
 
 var Bluebird = require('bluebird');
+var axios = require('axios');
 var React = require('react');
 var ReactDOM = require('react-dom');
 var Core = global.Core;
@@ -37,23 +38,36 @@ function defaultLayout(p, c) {
 */
 function createFetchWrapper(options) {
   // TODO: what about server-only fetch capability that requires client to fetch data first?
-  var fetch = options.fetch || Bluebird.resolve;
-  if (options.isAsync) {
-    fetch = Bluebird.coroutine(fetch);
-  }
   var propsTransform = options.view.props || defaultPropTransform;
 
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
   var View = React.createFactory(options.view.file);
 
-  return function wrappedFetch(request, response) {
+  return function wrappedFetch(request, next) {
     // check ACL ? but ACL could only be securely checked server side
     // check param types and validators
     // call the handler
 
     // TODO: any kind of Loading notification?
+    var fetch;
+    // TODO: prefetch having some issues due to typos (forgot script tags)
+    // but also, the "full request" despite the request wanting JSON.
+    // get working without prefetch!
 
-    fetch(request)
+    if (window.prefetch) {
+      var prefetch = window.prefetch;
+      window.prefetch = null;
+      // TODO: good enough for a prefetch?
+      fetch = Bluebird.resolve(prefetch);
+    } else if (options.fetch) {
+      fetch = axios
+        .get(request.path, request.query)
+        .then(function(res) { return res.data; });
+    } else {
+      fetch = Bluebird.resolve();
+    }
+
+    fetch
       .then(function(result) {
         var props = propsTransform(result);
         // this render is the only thing different in this wrapped part
@@ -64,7 +78,7 @@ function createFetchWrapper(options) {
       })
       .catch(function(error) {
         // TODO: gotta make sure that options has the error handler set then
-        options.errorHandler(error);
+        next(error);
       });
   };
 }

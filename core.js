@@ -9,10 +9,6 @@ var optionalAll = require('./utils/optional-all');
 var Server = require('./core/server');
 var TrieRouter = require('./router/router');
 
-var Core = {
-  server: Server
-};
-
 var Core = function() {
   // global.Query = require('./core/factories/query');
   // global.Table = require('./core/factories/table');
@@ -32,6 +28,7 @@ var Core = function() {
 
 Core.router = new TrieRouter();
 Core.server = Server();
+Core.components = require('./components/');
 
 global.Core = Core;
 module.exports = Core;

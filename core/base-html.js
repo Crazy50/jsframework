@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageScript, content) {
+module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageScript, content, prefetch, stores) {
   // TODO: maybe dot or something would be better for this
   response.send(
     '<!doctype html>\n'
@@ -16,9 +16,16 @@ module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageS
         // TODO: how does end user specify the CSS and extra JS to load?
       + '</head>\n'
       + '<body>\n'
-      + '<div id="bodymount">\n'
+      // no whitespace in here, because React explodes
+      + '<div id="bodymount">'
       + content
-      + '</div>\n'
+      + '</div>'
+
+      // always put the prefetched data before the scripts
+      // TODO: serious XSS attack possible here
+      + (prefetch ? '<script type="text/javascript">window.prefetch='+JSON.stringify(prefetch)+';</script>' : '')
+      + (stores ? '<script type="text/javascript">window.stores='+JSON.stringify(stores)+';</script>' : '')
+
       + '<script type="text/javascript" src="/public/core.js"></script>\n' // TODO: what about base urls?
       + pageScript
       + '</body>\n'

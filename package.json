@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Crazy50/jsframework",
   "dependencies": {
+    "axios": "0.9.1",
     "bluebird": "3.3.1",
     "body-parser": "1.15.0",
     "connect-flash": "0.1.1",

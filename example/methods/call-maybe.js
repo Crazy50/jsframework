@@ -9,7 +9,11 @@ module.exports = Method({
     test: /^[a-zA-Z0-9]+$/
   },
 
-  client: false,
+  client: {
+    handler: function(result) {
+      console.log('got result:', result);
+    }
+  },
 
   server: {
     method: 'post',

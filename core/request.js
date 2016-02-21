@@ -14,9 +14,9 @@ var CoreRequest = function CoreRequest(options) {
   this.params = options.params || {};
   this.query = options.query;
 
-  this.isServer = options.isServer || true;
-  this.isClient = options.isClient || !this.isServer;
-  this.isFullRequest = options.isFullRequest || this.isServer;
+  this.isServer = options.isServer;
+  this.isClient = options.isClient;
+  this.isFullRequest = options.isFullRequest;
 
   this.secure = this.protocol === 'https';
 };

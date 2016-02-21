@@ -8,12 +8,13 @@ module.exports = function(outputPath) {
       filename: 'core.js'
     },
     resolve: {
+      // extensions: ['', '.jsx', '.js', '.json'],
       root: [
-        path.resolve('./client')
+        process.cwd(),
+        path.resolve(__dirname + '/client'),
+        path.resolve(__dirname)
       ],
-      fallback: [
-        path.resolve('./')
-      ]
+      modulesDirectories: ['node_modules']
     }
   };
 };

@@ -18,21 +18,29 @@ handle start up
 */
 
 var TrieRouter = require('../router/router');
-//var Client = require('./core/client');
+var Client = require('./core/client');
 //var RpcClient = require('./core/rpc');
 
 var Core = {
   router: new TrieRouter(),
-  //client: Client,
-  //rpc: new RpcClient()
+  client: Client,
+  components: require('../components/'),
+  rest: require('./core/rest')
 };
 global.Core = Core;
 
-// window.Type = require('./core/factories/type');
-// window.Query = require('./core/factories/query');
-// window.Table = require('/core./factories/table');
-global.Method = require('/core./factories/method');
+// global.Query = require('./core/factories/query');
+// global.Table = require('./core/factories/table');
+global.Method = require('./core/factories/method');
 global.ViewModel = require('./core/factories/view-model');
 
+// TODO: is this really the best way??
 function requireAll(r) { r.keys().forEach(r); }
+// requireAll(require.context('dbtables/', true, /\.js$/));
+// requireAll(require.context('queries/', true, /\.js$/));
+// requireAll(require.context('methods/', true, /\.js$/));
 requireAll(require.context('view-models/', true, /\.js$/));
+
+// TODO: could be some issues here with something expecting Client to be initialized
+// maybe...
+Client();

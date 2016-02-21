@@ -78,33 +78,6 @@ function createHandlerWrapper(options) {
   };
 }
 
-function createClientWrapper(initialHandler, options) {
-  var paramValidator = Validator({
-    params: options.params,
-    strict: false
-  });
-
-  return function wrappedClient() {
-    // check param types and validators
-    var validationErrors = paramValidator(request.params);
-    if (validationErrors) {
-      // TODO: somehow call up the error page
-      return;
-    }
-
-    var action = initialHandler.apply(null, arguments);
-
-    if (options.client.handler) {
-      action.then(function(results) {
-        return options.client.handler(results);
-      });
-    }
-    action.catch(function(error) {
-      options.errorHandler(error);
-    });
-  };
-}
-
 /*
   this will:
     - create wrapper to check ACL, check param types/validation
@@ -116,34 +89,15 @@ function createClientWrapper(initialHandler, options) {
 */
 var Method = function(options) {
   var name = options.name;
-  // if client, return a function that performs all the actions
-  // core.client only exists on the client-side
-  // core.rpc is on both sides, but is a different thing on either side
-  if (Core.client) {
-    if (options.client) {
-      if (options.handler) {
-        return createClientWrapper(Core.rpc.createrCaller({name: name, params: options.params}), options);
-      }
-      else if (options.client.rest) {
-        // a rest call to some URL
-        return createClientWrapper(Core.rest.createrCaller(options.client.rest.url), options);
-      }
-      else {
-        // not making any external call, just doing something internally
-        return createClientWrapper(Bluebird.resolve, options);
-      }
-    }
-
-    // only way we get to this return is on the client side, but this function isn't client-able
-    throw new Exception('Method not allowed');
-  }
 
   // if server, set up the routes and/or RPC calls
   // core.server only exists on the server side
   var handler = createHandlerWrapper(options);
+  handler.server = options.server;
+
   if (options.server) {
     // assume Methods come over post if not specified
-    var methods = options.server.methods || 'post';
+    var methods = options.server.method || 'post';
     var url = options.server.url || '/api/' + name;
 
     // TODO: along with refactor, clean it up
@@ -155,14 +109,14 @@ var Method = function(options) {
   }
 
   if (options.client) {
-    if (options.client) {
-      Core.rpc.addCall({
-        name: name,
-        params: options.params,
-        handler: handler
-      });
-    }
+    // Core.rpc.addCall({
+    //   name: name,
+    //   params: options.params,
+    //   handler: handler
+    // });
   }
+
+  return handler;
 };
 
 module.exports = Method;

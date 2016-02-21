@@ -22,8 +22,8 @@ var Server = function Server() {
   // middlewares
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({extended: true}));
-  app.use(session());
-  app.use(flash());
+  // app.use(session());
+  // app.use(flash());
 
   // our custom handler
   app.use(_handler);
