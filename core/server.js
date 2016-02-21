@@ -22,6 +22,7 @@ var Server = function Server() {
   // middlewares
   app.use(cookieParser());
   app.use(bodyParser.urlencoded({extended: true}));
+  app.use(bodyParser.json());
   // app.use(session());
   // app.use(flash());
 

@@ -13,9 +13,10 @@ function createClientWrapper(initialHandler, options) {
 
   return function wrappedClient(data) {
     // check param types and validators
-    var validationErrors = paramValidator(request.params);
+    var validationErrors = paramValidator(data);
     if (validationErrors) {
       // TODO: somehow call up the error page
+      console.log(validationErrors);
       return;
     }
 

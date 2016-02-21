@@ -10,6 +10,7 @@ var Server = require('./core/server');
 var TrieRouter = require('./router/router');
 
 var Core = function() {
+  global.Type = require('./core/factories/type');
   // global.Query = require('./core/factories/query');
   // global.Table = require('./core/factories/table');
   global.Method = require('./core/factories/method');
@@ -18,6 +19,7 @@ var Core = function() {
   // TODO: is this really the best way??
   // also, require-all fails if the directory doesnt exist
   var cwd = process.cwd();
+  optionalAll(cwd + '/types');
   optionalAll(cwd + '/dbtables');
   optionalAll(cwd + '/queries');
   optionalAll(cwd + '/methods');

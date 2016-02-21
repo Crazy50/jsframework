@@ -24,7 +24,7 @@ module.exports = Method({
   },
 
   handler: function() {
-    console.log('hello test', this.params.test);
+    console.log('call-me-maybe:', this.params.test);
     return Promise.resolve(this.params.test);
   }
 });

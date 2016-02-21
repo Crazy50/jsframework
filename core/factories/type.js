@@ -1,6 +1,6 @@
 'use strict';
 
-// not called with "new", it's just a factory
+// returns a constructor (myItem = new MyType) but has a MyType.validate(myItem);
 var Type = function Type(schema) {
   // return a constructor for the type
   var construct = function construct(values) {

@@ -12,6 +12,11 @@ function defaultPropTransform() {
 function defaultLayout(p, c) {
   return c;
 }
+function titleFetcher(title) {
+  return function() {
+    return title;
+  }
+}
 
 // TODO: so much that is duplicated between client and server
 /*
@@ -40,6 +45,11 @@ function createFetchWrapper(options) {
   // TODO: what about server-only fetch capability that requires client to fetch data first?
   var propsTransform = options.view.props || defaultPropTransform;
 
+  var pageTitle = options.pageTitle || emptyOutputer;
+  if (!(pageTitle instanceof Function)) {
+    pageTitle = titleFetcher(pageTitle);
+  }
+
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
   var View = React.createFactory(options.view.file);
 
@@ -54,9 +64,9 @@ function createFetchWrapper(options) {
     // but also, the "full request" despite the request wanting JSON.
     // get working without prefetch!
 
-    if (window.prefetch) {
-      var prefetch = window.prefetch;
-      window.prefetch = null;
+    if (Core.client.prefetch) {
+      var prefetch = Core.client.prefetch;
+      Core.client.prefetch = null;
       // TODO: good enough for a prefetch?
       fetch = Bluebird.resolve(prefetch);
     } else if (options.fetch) {
@@ -70,7 +80,11 @@ function createFetchWrapper(options) {
     fetch
       .then(function(result) {
         var props = propsTransform(result);
-        // this render is the only thing different in this wrapped part
+
+        // TODO: what about if a page has extra CSS or JS?
+        // maybe we make users load all the CSS and JS they need app-wide?
+        document.title = pageTitle.bind(request)(result);
+
         ReactDOM.render(
           Layout(null, View(props)),
           document.getElementById('bodymount')

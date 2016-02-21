@@ -9,34 +9,8 @@ var CoreResponse = require('./response');
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-// convert from JSON to just form encoded
-axios.interceptors.request.use(function(config) {
-  var data = config.data;
-  var str = [];
-  for(var p in data) {
-    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(data[p]));
-  }
-  config.data = str.join("&");
-  return config;
-}, function(error) {
-  // TODO: what about promise not existing!
-  return Promise.reject(error);
-});
-
-// future CSRF
-// axios.interceptors.response.use((response) => {
-//   if (response && response.data && response.data.csrf) {
-//     context.getActionContext().dispatch('SETCSRF_TOKEN', response.data.csrf);
-//   }
-//   return response;
-// }, function (error) {
-//   return Promise.reject(error);
-// });
-
 var Client = function Client() {
   Client.history = useQueries(createHistory)();
-  Client.stopHistory = Client.history.listen(_handler);
-
   // TODO: cookies
   // session
   // Flash
@@ -46,6 +20,11 @@ var Client = function Client() {
   // TODO: need to load the stores
   // pre-load the current route/view
   // how to skip a re-fetch? already had the data anyway
+  Client.prefetch = window.prefetch;
+  window.prefetch = null;
+
+  // setting listener must be last, since the current route will act immediately
+  Client.stopHistory = Client.history.listen(_handler);
 
   return Client;
 };

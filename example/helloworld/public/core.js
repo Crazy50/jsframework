@@ -77,8 +77,8 @@
 
 	// global.Query = require('./core/factories/query');
 	// global.Table = require('./core/factories/table');
-	global.Method = __webpack_require__(211);
-	global.ViewModel = __webpack_require__(215);
+	global.Method = __webpack_require__(212);
+	global.ViewModel = __webpack_require__(216);
 
 	// TODO: is this really the best way??
 	function requireAll(r) { r.keys().forEach(r); }
@@ -1843,34 +1843,8 @@
 
 	axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-	// convert from JSON to just form encoded
-	axios.interceptors.request.use(function(config) {
-	  var data = config.data;
-	  var str = [];
-	  for(var p in data) {
-	    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(data[p]));
-	  }
-	  config.data = str.join("&");
-	  return config;
-	}, function(error) {
-	  // TODO: what about promise not existing!
-	  return Promise.reject(error);
-	});
-
-	// future CSRF
-	// axios.interceptors.response.use((response) => {
-	//   if (response && response.data && response.data.csrf) {
-	//     context.getActionContext().dispatch('SETCSRF_TOKEN', response.data.csrf);
-	//   }
-	//   return response;
-	// }, function (error) {
-	//   return Promise.reject(error);
-	// });
-
 	var Client = function Client() {
 	  Client.history = useQueries(createHistory)();
-	  Client.stopHistory = Client.history.listen(_handler);
-
 	  // TODO: cookies
 	  // session
 	  // Flash
@@ -1880,6 +1854,11 @@
 	  // TODO: need to load the stores
 	  // pre-load the current route/view
 	  // how to skip a re-fetch? already had the data anyway
+	  Client.prefetch = window.prefetch;
+	  window.prefetch = null;
+
+	  // setting listener must be last, since the current route will act immediately
+	  Client.stopHistory = Client.history.listen(_handler);
 
 	  return Client;
 	};
@@ -23768,6 +23747,37 @@
 	'use strict';
 
 	var React = __webpack_require__(54);
+	var ReactDOM = __webpack_require__(211);
+
+	function serialize(form) {
+	    if (!(typeof form == 'object' && form.nodeName == "FORM")) {
+	      return null;
+	    }
+
+	    var values = {};
+	    var len = form.elements.length;
+	    var i, j;
+
+	    for (i=0; i<len; i++) {
+	      var field = form.elements[i];
+	      if (!(field.name && !field.disabled && field.type != 'file' && field.type != 'reset' && field.type != 'submit' && field.type != 'button')) {
+	        continue;
+	      }
+
+	      if (field.type == 'select-multiple') {
+	        values[field.name] = [];
+	        for (j=form.elements[i].options.length; j--;) {
+	          if(field.options[j].selected) {
+	            values[field.name].push(field.options[j].value);
+	          }
+	        }
+	      } else if ((field.type != 'checkbox' && field.type != 'radio') || field.checked) {
+	        values[field.name] = field.value;
+	      }
+	    }
+
+	    return values;
+	}
 
 	var Form = React.createClass({
 	  displayName: "Form",
@@ -23775,13 +23785,10 @@
 	  submitForm: function(event) {
 	    event.preventDefault();
 
-	    console.log('submitted', this.refs.test);
-	    // TODO: not a good way to get the values from a form
-	    for (var prop in this.refs) {
-	      console.log(prop);
-	      console.log(this.refs[prop].value);
-	    }
-	    //this.props.method();
+	    var formnode = ReactDOM.findDOMNode(this);
+	    var data = serialize(formnode);
+
+	    this.props.method(data);
 	  },
 
 	  render: function() {
@@ -23803,12 +23810,21 @@
 /* 211 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	module.exports = __webpack_require__(56);
+
+
+/***/ },
+/* 212 */
+/***/ function(module, exports, __webpack_require__) {
+
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
-	var Bluebird = __webpack_require__(212);
+	var Bluebird = __webpack_require__(213);
 	var Core = global.Core;
 
-	var Validator = __webpack_require__(214)
+	var Validator = __webpack_require__(215)
 
 	function createClientWrapper(initialHandler, options) {
 	  var paramValidator = Validator({
@@ -23818,9 +23834,10 @@
 
 	  return function wrappedClient(data) {
 	    // check param types and validators
-	    var validationErrors = paramValidator(request.params);
+	    var validationErrors = paramValidator(data);
 	    if (validationErrors) {
 	      // TODO: somehow call up the error page
+	      console.log(validationErrors);
 	      return;
 	    }
 
@@ -23897,7 +23914,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 212 */
+/* 213 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process, global, setImmediate) {/* @preserve
@@ -29308,10 +29325,10 @@
 
 	},{"./es5":13}]},{},[4])(4)
 	});                    ;if (typeof window !== 'undefined' && window !== null) {                               window.P = window.Promise;                                                     } else if (typeof self !== 'undefined' && self !== null) {                             self.P = self.Promise;                                                         }
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7), (function() { return this; }()), __webpack_require__(213).setImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7), (function() { return this; }()), __webpack_require__(214).setImmediate))
 
 /***/ },
-/* 213 */
+/* 214 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(setImmediate, clearImmediate) {var nextTick = __webpack_require__(7).nextTick;
@@ -29390,10 +29407,10 @@
 	exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
 	  delete immediateIds[id];
 	};
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(213).setImmediate, __webpack_require__(213).clearImmediate))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(214).setImmediate, __webpack_require__(214).clearImmediate))
 
 /***/ },
-/* 214 */
+/* 215 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -29489,15 +29506,15 @@
 
 
 /***/ },
-/* 215 */
+/* 216 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
 
-	var Bluebird = __webpack_require__(212);
+	var Bluebird = __webpack_require__(213);
 	var axios = __webpack_require__(2);
 	var React = __webpack_require__(54);
-	var ReactDOM = __webpack_require__(216);
+	var ReactDOM = __webpack_require__(211);
 	var Core = global.Core;
 
 	function defaultPropTransform() {
@@ -29505,6 +29522,11 @@
 	}
 	function defaultLayout(p, c) {
 	  return c;
+	}
+	function titleFetcher(title) {
+	  return function() {
+	    return title;
+	  }
 	}
 
 	// TODO: so much that is duplicated between client and server
@@ -29534,6 +29556,11 @@
 	  // TODO: what about server-only fetch capability that requires client to fetch data first?
 	  var propsTransform = options.view.props || defaultPropTransform;
 
+	  var pageTitle = options.pageTitle || emptyOutputer;
+	  if (!(pageTitle instanceof Function)) {
+	    pageTitle = titleFetcher(pageTitle);
+	  }
+
 	  var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
 	  var View = React.createFactory(options.view.file);
 
@@ -29548,9 +29575,9 @@
 	    // but also, the "full request" despite the request wanting JSON.
 	    // get working without prefetch!
 
-	    if (window.prefetch) {
-	      var prefetch = window.prefetch;
-	      window.prefetch = null;
+	    if (Core.client.prefetch) {
+	      var prefetch = Core.client.prefetch;
+	      Core.client.prefetch = null;
 	      // TODO: good enough for a prefetch?
 	      fetch = Bluebird.resolve(prefetch);
 	    } else if (options.fetch) {
@@ -29564,7 +29591,11 @@
 	    fetch
 	      .then(function(result) {
 	        var props = propsTransform(result);
-	        // this render is the only thing different in this wrapped part
+
+	        // TODO: what about if a page has extra CSS or JS?
+	        // maybe we make users load all the CSS and JS they need app-wide?
+	        document.title = pageTitle.bind(request)(result);
+
 	        ReactDOM.render(
 	          Layout(null, View(props)),
 	          document.getElementById('bodymount')
@@ -29590,15 +29621,6 @@
 	module.exports = ViewModel;
 
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
-
-/***/ },
-/* 216 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	module.exports = __webpack_require__(56);
-
 
 /***/ },
 /* 217 */
@@ -29627,7 +29649,7 @@
 
 	'use strict';
 
-	var Bluebird = __webpack_require__(212);
+	var Bluebird = __webpack_require__(213);
 
 	ViewModel({
 	  url: '/',
@@ -29692,7 +29714,7 @@
 	        ),
 
 	        Form({method: callMeMaybe},
-	          React.createElement("input", {type: 'text', name: 'test', ref: 'test'}),
+	          React.createElement("input", {type: 'text', name: 'test'}),
 	          React.createElement("input", {type: 'submit', value: 'Try Test'})
 	        )
 	      )
@@ -29709,7 +29731,7 @@
 
 	'use strict';
 
-	var Bluebird = __webpack_require__(212);
+	var Bluebird = __webpack_require__(213);
 
 	module.exports = Method({
 	  name: 'callmemaybe',
@@ -29733,7 +29755,7 @@
 	  },
 
 	  handler: function() {
-	    console.log('hello test', this.params.test);
+	    console.log('call-me-maybe:', this.params.test);
 	    return Promise.resolve(this.params.test);
 	  }
 	});

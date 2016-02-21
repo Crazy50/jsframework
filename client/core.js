@@ -29,6 +29,7 @@ var Core = {
 };
 global.Core = Core;
 
+global.Type = require('./core/factories/type');
 // global.Query = require('./core/factories/query');
 // global.Table = require('./core/factories/table');
 global.Method = require('./core/factories/method');
@@ -36,6 +37,7 @@ global.ViewModel = require('./core/factories/view-model');
 
 // TODO: is this really the best way??
 function requireAll(r) { r.keys().forEach(r); }
+requireAll(require.context('types/', true, /\.js$/));
 // requireAll(require.context('dbtables/', true, /\.js$/));
 // requireAll(require.context('queries/', true, /\.js$/));
 // requireAll(require.context('methods/', true, /\.js$/));
