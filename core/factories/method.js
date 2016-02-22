@@ -50,6 +50,7 @@ function createHandlerWrapper(options) {
     strict: false
   });
 
+  // TODO: this doesn't work for direct calling though
   return function wrappedHandler(request, response) {
     // check ACL
     // check param types and validators

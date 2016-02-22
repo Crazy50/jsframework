@@ -14,7 +14,8 @@ module.exports = function(outputPath) {
         path.resolve(__dirname + '/client'),
         path.resolve(__dirname)
       ],
-      modulesDirectories: ['node_modules']
+      modulesDirectories: ['node_modules'],
+      packageAlias: 'browser'
     }
   };
 };

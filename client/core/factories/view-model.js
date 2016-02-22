@@ -6,8 +6,8 @@ var React = require('react');
 var ReactDOM = require('react-dom');
 var Core = global.Core;
 
-function defaultPropTransform() {
-  return null;
+function defaultPropTransform(props) {
+  return props;
 }
 function defaultLayout(p, c) {
   return c;

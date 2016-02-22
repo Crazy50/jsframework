@@ -50,8 +50,8 @@ var sendHtml = require('../base-html');
 // would be useful for things like logging response times and just whatever else someone comes up with
 // these handlers could also be used for fetching and solve the above todo
 
-function defaultPropTransform() {
-  return null;
+function defaultPropTransform(results) {
+  return results;
 }
 function defaultLayout(p, c) {
   return c;
@@ -162,6 +162,7 @@ function createFetchWrapper(options) {
     // call the handler
     fetch.bind(request)()
       .then(function(result) {
+        // TODO: how to make sure store are populated with any data received?
         if (request.isFullRequest) {
           var props = propsTransform(result);
           sendHtml(
@@ -172,7 +173,7 @@ function createFetchWrapper(options) {
             '',
             ReactDOM.renderToString(Layout(null, View(props))),
             result,
-            null // TODO: stores, one day...
+            Core.serializeStores()
           );
         } else {
           response.send(result);

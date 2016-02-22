@@ -1,0 +1,16 @@
+todo:
+  serialize the form -> Method
+  types
+  stores/tables (and making sure its per request server side)
+    - memorytable
+  the config "defaults" in modules that get reset
+  better initial HTML generator
+  something to client-only js
+  making the dev part easier (webpack watch, run, etc)
+  get babel working
+  session management
+  csrf
+
+  queries
+    - is there such a thing as a query on a memory table?
+  live updates

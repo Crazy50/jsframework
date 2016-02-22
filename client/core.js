@@ -25,20 +25,25 @@ var Core = {
   router: new TrieRouter(),
   client: Client,
   components: require('../components/'),
-  rest: require('./core/rest')
+  rest: require('./core/rest'),
+
+  stores: []
 };
 global.Core = Core;
 
-global.Type = require('./core/factories/type');
-// global.Query = require('./core/factories/query');
-// global.Table = require('./core/factories/table');
-global.Method = require('./core/factories/method');
-global.ViewModel = require('./core/factories/view-model');
+global.Type = require('core/factories/type');
+global.Store = require('core/factories/store');
+global.Query = require('./core/factories/query');
+global.Method = require('core/factories/method');
+global.ViewModel = require('core/factories/view-model');
 
 // TODO: is this really the best way??
 function requireAll(r) { r.keys().forEach(r); }
-requireAll(require.context('types/', true, /\.js$/));
-// requireAll(require.context('dbtables/', true, /\.js$/));
+
+// TODO: I think that commenting everything except view-models makes it
+// so that only items that are used client side are really loaded
+// requireAll(require.context('types/', true, /\.js$/));
+// requireAll(require.context('stores/', true, /\.js$/));
 // requireAll(require.context('queries/', true, /\.js$/));
 // requireAll(require.context('methods/', true, /\.js$/));
 requireAll(require.context('view-models/', true, /\.js$/));
