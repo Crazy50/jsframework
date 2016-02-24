@@ -50,8 +50,8 @@ var sendHtml = require('../base-html');
 // would be useful for things like logging response times and just whatever else someone comes up with
 // these handlers could also be used for fetching and solve the above todo
 
-function defaultPropTransform() {
-  return null;
+function defaultPropTransform(results) {
+  return results;
 }
 function defaultLayout(p, c) {
   return c;
@@ -80,34 +80,34 @@ function metaFetcher(metaArr) {
     return meta;
   }
 }
-function cssFetcher(css) {
-  return function() {
-    // TODO: how to handle the subdirs/base?
-    return '<link href="/public/' + css + '" rel="stylesheet" type="text/css">\n'
-  }
-}
-function cssArrayFetcher(cssArray) {
-  return function() {
-    var css = '';
-    for (var i=0; i < cssArray.length; i++) {
-      css += cssFetcher(cssArray[i])();
-    }
-    return css;
-  }
-}
-function scriptFetcher(script) {
-  return function() {
-    // TODO: how to handle the subdirs/base?
-    return '<script type="text/javascript" src="/public/' + script + '"></script>\n'
-  }
-}
-function scriptArrayFetcher(scriptArray) {
-  var script = '';
-  for (var i=0; i < scriptArray.length; i++) {
-    script += scriptFetcher(scriptArray[i])();
-  }
-  return script;
-}
+// function cssFetcher(css) {
+//   return function() {
+//     // TODO: how to handle the subdirs/base?
+//     return '<link href="/public/' + css + '" rel="stylesheet" type="text/css">\n'
+//   }
+// }
+// function cssArrayFetcher(cssArray) {
+//   return function() {
+//     var css = '';
+//     for (var i=0; i < cssArray.length; i++) {
+//       css += cssFetcher(cssArray[i])();
+//     }
+//     return css;
+//   }
+// }
+// function scriptFetcher(script) {
+//   return function() {
+//     // TODO: how to handle the subdirs/base?
+//     return '<script type="text/javascript" src="/public/' + script + '"></script>\n'
+//   }
+// }
+// function scriptArrayFetcher(scriptArray) {
+//   var script = '';
+//   for (var i=0; i < scriptArray.length; i++) {
+//     script += scriptFetcher(scriptArray[i])();
+//   }
+//   return script;
+// }
 function emptyOutputer() {
   return '';
 }
@@ -124,8 +124,8 @@ function createFetchWrapper(options) {
 
   var pageTitle = options.pageTitle || emptyOutputer;
   var pageMeta = options.pageMeta || emptyOutputer;
-  var pageCss = options.pageCss || emptyOutputer;
-  var pageScript = options.pageScript || emptyOutputer;
+  // var pageCss = options.pageCss || emptyOutputer;
+  // var pageScript = options.pageScript || emptyOutputer;
 
   if (!(pageTitle instanceof Function)) {
     pageTitle = titleFetcher(pageTitle);
@@ -133,21 +133,21 @@ function createFetchWrapper(options) {
   if (!(pageMeta instanceof Function)) {
     pageMeta = metaFetcher(pageMeta);
   }
-  if (!(pageCss instanceof Function)) {
-    pageCss = (pageCss instanceof Array ? cssArrayFetcher(pageCss) : cssFetcher(pageCss));
-  }
-  if (!(pageScript instanceof Function)) {
-    pageScript = (pageScript instanceof Array ? scriptArrayFetcher(pageScript) : scriptFetcher(pageScript));
-  }
+  // if (!(pageCss instanceof Function)) {
+  //   pageCss = (pageCss instanceof Array ? cssArrayFetcher(pageCss) : cssFetcher(pageCss));
+  // }
+  // if (!(pageScript instanceof Function)) {
+  //   pageScript = (pageScript instanceof Array ? scriptArrayFetcher(pageScript) : scriptFetcher(pageScript));
+  // }
 
   var propsTransform = options.view.props || defaultPropTransform;
 
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
   var View = React.createFactory(options.view.file);
 
-  var errorHandler = options.errorHandler || Core.ErrorDispatcher;
+  var errorHandler = options.errorHandler;
 
-  return function wrappedFetch(request, response) {
+  return function wrappedFetch(request, response, next) {
     // check ACL
     // TODO: per-view ACL is good, but also having directory-wide ACL would be a welcome improvement
 
@@ -155,24 +155,33 @@ function createFetchWrapper(options) {
     var validationErrors = paramValidator(request.params);
     if (validationErrors) {
       // TODO: better error pages
-      response.statusCode(400).send(validationErrors).end();
+      response.status(400).send(validationErrors);
       return;
     }
 
     // call the handler
     fetch.bind(request)()
       .then(function(result) {
-        var props = propsTransform(result);
-        sendHtml(
-          response,
-          pageTitle.bind(request)(result),
-          pageMeta.bind(request)(result),
-          pageCss.bind(request)(result),
-          pageScript.bind(request)(result),
-          ReactDOM.renderToString(Layout(null, View(props))));
+        // TODO: how to make sure store are populated with any data received?
+        if (request.isFullRequest) {
+          var props = propsTransform(result);
+          sendHtml(
+            response,
+            pageTitle.bind(request)(result),
+            pageMeta.bind(request)(result),
+            '', // TODO: need to figure out what users can set for CSS and JS
+            '',
+            ReactDOM.renderToString(Layout(null, View(props))),
+            result,
+            Core.serializeStores()
+          );
+        } else {
+          response.send(result);
+        }
       })
       .catch(function(error) {
-        errorHandler(request, response, error);
+        // TODO: per-view error handlers
+        next(error);
       });
   };
 }

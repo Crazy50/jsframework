@@ -1,15 +1,21 @@
 'use strict';
 
 var Bluebird = require('bluebird');
+var axios = require('axios');
 var React = require('react');
 var ReactDOM = require('react-dom');
 var Core = global.Core;
 
-function defaultPropTransform() {
-  return null;
+function defaultPropTransform(props) {
+  return props;
 }
 function defaultLayout(p, c) {
   return c;
+}
+function titleFetcher(title) {
+  return function() {
+    return title;
+  }
 }
 
 // TODO: so much that is duplicated between client and server
@@ -37,26 +43,48 @@ function defaultLayout(p, c) {
 */
 function createFetchWrapper(options) {
   // TODO: what about server-only fetch capability that requires client to fetch data first?
-  var fetch = options.fetch || Bluebird.resolve;
-  if (options.isAsync) {
-    fetch = Bluebird.coroutine(fetch);
-  }
   var propsTransform = options.view.props || defaultPropTransform;
+
+  var pageTitle = options.pageTitle || emptyOutputer;
+  if (!(pageTitle instanceof Function)) {
+    pageTitle = titleFetcher(pageTitle);
+  }
 
   var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
   var View = React.createFactory(options.view.file);
 
-  return function wrappedFetch(request, response) {
+  return function wrappedFetch(request, next) {
     // check ACL ? but ACL could only be securely checked server side
     // check param types and validators
     // call the handler
 
     // TODO: any kind of Loading notification?
+    var fetch;
+    // TODO: prefetch having some issues due to typos (forgot script tags)
+    // but also, the "full request" despite the request wanting JSON.
+    // get working without prefetch!
 
-    fetch(request)
+    if (Core.client.prefetch) {
+      var prefetch = Core.client.prefetch;
+      Core.client.prefetch = null;
+      // TODO: good enough for a prefetch?
+      fetch = Bluebird.resolve(prefetch);
+    } else if (options.fetch) {
+      fetch = axios
+        .get(request.path, request.query)
+        .then(function(res) { return res.data; });
+    } else {
+      fetch = Bluebird.resolve();
+    }
+
+    fetch
       .then(function(result) {
         var props = propsTransform(result);
-        // this render is the only thing different in this wrapped part
+
+        // TODO: what about if a page has extra CSS or JS?
+        // maybe we make users load all the CSS and JS they need app-wide?
+        document.title = pageTitle.bind(request)(result);
+
         ReactDOM.render(
           Layout(null, View(props)),
           document.getElementById('bodymount')
@@ -64,7 +92,7 @@ function createFetchWrapper(options) {
       })
       .catch(function(error) {
         // TODO: gotta make sure that options has the error handler set then
-        options.errorHandler(error);
+        next(error);
       });
   };
 }

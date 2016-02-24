@@ -2,17 +2,21 @@
 
 var Bluebird = require('bluebird');
 
-var BaseStore = require('../base-store');
-var Validator = require('../validator');
+var BaseStore = require('core/base-store');
+var Validator = require('core/validator');
+
+// sometimes, we do the same on the client as the server
+var ServerQuery = require('core/factories/query');
 
 function createQueryHandler(internalStore, options) {
   // perform the query
   // put any data in the store
   // put the id or array of IDs in this
   // notify listeners
+  var fetch = Core.rest.createCaller(options.rest.method, options.rest.url);
 
   return function queryHandler(params) {
-    return options.publisher(params).then(function(results) {
+    return fetch(params).then(function(results) {
       var newData = [];
 
       if (results instanceof Array) {
@@ -29,24 +33,17 @@ function createQueryHandler(internalStore, options) {
 
       internalStore.data = newData;
 
-      var ret = {};
-      ret[options.store.name] = results;
-      return ret;
+      return results;
     });
   };
 }
 
-function createQueryWrapper(fetcher, options) {
-  var transform = options.outputTransform || JSON.stringify;
-
-  return function wrappedQuery(request, response, next) {
-    return fetcher(request.params).then(function(results) {
-      response.send(results !== undefined ? transform(results) : {});
-    }).catch(next);
-  };
-}
-
 var Query = function Query(options) {
+  if (options.store.sameClient) {
+    console.log('make server-like one');
+    return ServerQuery(options);
+  }
+
   var internalStore = BaseStore({name: options.name, initialData: []});
   internalStore.getData = function() {
     var otherData = options.store.getData();
@@ -55,6 +52,8 @@ var Query = function Query(options) {
     return order.map(function(id) { return otherData[id]; });
   }.bind(internalStore);
   options.store.observe(function() {
+    // TODO: refresh the view?
+
     // also make sure we emit when the other store has changes
     internalStore.emit();
   });
@@ -62,27 +61,7 @@ var Query = function Query(options) {
   var handler = createQueryHandler(internalStore, options);
   handler.store = internalStore;
 
-  Core.router.add({
-    methods: options.method,
-    path: options.url,
-    handler: createQueryWrapper(handler, options)
-  });
-
-  // can't return just the publisher, because any call made, we want to grab for stores
   return handler;
-
-  // name: 'todo',
-  // store: TodoStore,
-  //
-  // client: true,
-  // rest: {
-  //   method: 'get',
-  //   url: '/todo/{todoid}'
-  // },
-  //
-  // publisher: function() {
-  //   return this.store.find(this.params.todoid);
-  // }
 };
 
 module.exports = Query;

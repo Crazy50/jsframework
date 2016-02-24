@@ -9,7 +9,12 @@ module.exports = Method({
     test: /^[a-zA-Z0-9]+$/
   },
 
-  client: false,
+  client: {
+    handler: function(result) {
+      console.log('got result:', result);
+      // TODO: how to get a redirect in here?
+    }
+  },
 
   server: {
     method: 'post',
@@ -20,7 +25,7 @@ module.exports = Method({
   },
 
   handler: function() {
-    console.log('hello test', this.params.test);
+    console.log('call-me-maybe:', this.params.test);
     return Promise.resolve(this.params.test);
   }
 });

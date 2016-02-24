@@ -7,13 +7,29 @@ module.exports = function(outputPath) {
       path: outputPath,
       filename: 'core.js'
     },
-    resolve: {
-      root: [
-        path.resolve('./client')
+
+    module: {
+      loaders: [
+        {
+          test: /\.jsx?$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader',
+          query: {
+            presets: ["es2015", "react"]
+          }
+        }
       ],
-      fallback: [
-        path.resolve('./')
-      ]
+    },
+
+    resolve: {
+      extensions: ['', '.jsx', '.js', '.json'],
+      root: [
+        process.cwd(),
+        path.resolve(__dirname + '/client'),
+        path.resolve(__dirname)
+      ],
+      modulesDirectories: ['node_modules'],
+      packageAlias: 'browser'
     }
   };
 };

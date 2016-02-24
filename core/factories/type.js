@@ -1,6 +1,6 @@
 'use strict';
 
-// not called with "new", it's just a factory
+// returns a constructor (myItem = new MyType) but has a MyType.validate(myItem);
 var Type = function Type(schema) {
   // return a constructor for the type
   var construct = function construct(values) {
@@ -20,19 +20,19 @@ var Type = function Type(schema) {
     // make sure it has all props defined
     for (var i=this.properties.length; i--;) {
       if (!item.hasOwnProperty(this.properties[i])) {
-        throw new Exception(prop + ' is not defined in the item');
+        return (prop + ' is not defined in the item');
       }
     }
 
     for (var prop in item) {
       // check if prop should not exist in type
       if (this.properties.indexOf(prop) === -1) {
-        throw new Exception(prop + ' is not defined in the type');
+        return (prop + ' is not defined in the type');
       }
 
       // check for required
       if (!this.schema[prop].nullable && item[prop] === null) {
-        throw new Exception(prop + ' must not be null');
+        return (prop + ' must not be null');
       }
 
       // check type
@@ -40,7 +40,7 @@ var Type = function Type(schema) {
       // check validators
     }
 
-    return true;
+    return null;
   }.bind(construct);
 
   return construct;
