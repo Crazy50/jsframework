@@ -7,6 +7,50 @@ var Todo = require('../types/todo');
 var TodoStore = require('../stores/todo');
 var TodosQuery = require('../queries/alltodos');
 
+// TODO: MondayOSCOPY day:
+/*
+
+ViewModel.defauts.pageTitle = 'Default Page Title';
+
+// override even Core.Config.ViewModel.defaults
+ViewModel.defauts.policies = myPolicy;
+ViewModel.defauts.policies = [myPolicy1, myPolicy2];
+
+// extend from the Core.Config.ViewModel.defaults
+ViewModel.defauts.policies.push(myPolicy);
+
+ViewModel({
+  ...
+  policies: 'extendedPolicy',
+
+  // or an array
+  policies: ['extendedPolicy1', 'extendedPolicy2'],
+
+  // to override and use only ones set here:
+  overridePolicies: true
+  ...
+})
+
+
+var error400 = Error({
+  view: require('../views/errors/error400')
+  props: function(error) {},
+  pageTitle: function(error) {},
+  handler: function(request, response) {}
+});
+  ...
+  errors: {
+    4xx: error400
+  }
+  ...
+
+As such, need to build a CoreResponse for client side to do things like:
+  redirect
+
+without it, the handler() for errors doesn't work.
+
+*/
+
 ViewModel({
   url: '/',
   pageTitle: 'Your Todos',

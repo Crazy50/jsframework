@@ -20,6 +20,7 @@ exports.Add = Method({
 
   handler: function() {
     var item = new Todo({message: message});
+    // TODO: how does the query get updated along with view?
     return TodoStore.insert(item);
   }
 });
@@ -40,6 +41,7 @@ exports.Remove = Method({
   },
 
   handler: function() {
+    // TODO: how does the query get updated along with view?
     return TodoStore.remove(this.item.id);
   }
 });

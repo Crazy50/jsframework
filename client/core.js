@@ -33,7 +33,7 @@ global.Core = Core;
 
 global.Type = require('core/factories/type');
 global.Store = require('core/factories/store');
-global.Query = require('./core/factories/query');
+global.Query = require('./core/factories/query-client');
 global.Method = require('core/factories/method');
 global.ViewModel = require('core/factories/view-model');
 

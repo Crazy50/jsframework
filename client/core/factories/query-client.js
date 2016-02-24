@@ -5,6 +5,9 @@ var Bluebird = require('bluebird');
 var BaseStore = require('core/base-store');
 var Validator = require('core/validator');
 
+// sometimes, we do the same on the client as the server
+var ServerQuery - require('core/query');
+
 function createQueryHandler(internalStore, options) {
   // perform the query
   // put any data in the store
@@ -36,6 +39,11 @@ function createQueryHandler(internalStore, options) {
 }
 
 var Query = function Query(options) {
+  if (options.store.sameClient) {
+    console.log('make server-like one');
+    return ServerQuery(options);
+  }
+
   var internalStore = BaseStore({name: options.name, initialData: []});
   internalStore.getData = function() {
     var otherData = options.store.getData();
@@ -44,6 +52,8 @@ var Query = function Query(options) {
     return order.map(function(id) { return otherData[id]; });
   }.bind(internalStore);
   options.store.observe(function() {
+    // TODO: refresh the view?
+
     // also make sure we emit when the other store has changes
     internalStore.emit();
   });

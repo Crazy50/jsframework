@@ -13,6 +13,7 @@ var MemoryStore = function MemoryStore(options) {
   var schema = options.schema;
 
   var store = BaseStore(options);
+  store.sameClient = true;
   store.nextId = 1;
 
   store.insert = function insert(item) {
