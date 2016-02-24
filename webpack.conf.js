@@ -7,8 +7,19 @@ module.exports = function(outputPath) {
       path: outputPath,
       filename: 'core.js'
     },
+
+    module: {
+      loaders: [
+        {
+          test: /\.jsx?$/,
+          exclude: /node_modules/,
+          loader: 'babel-loader'
+        }
+      ],
+    },
+
     resolve: {
-      // extensions: ['', '.jsx', '.js', '.json'],
+      extensions: ['', '.jsx', '.js', '.json'],
       root: [
         process.cwd(),
         path.resolve(__dirname + '/client'),

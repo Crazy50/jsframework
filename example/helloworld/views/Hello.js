@@ -1,31 +1,27 @@
-'use strict';
+import React from 'react';
+import callMeMaybe from '../methods/call-maybe';
 
-var React = require('react');
+const Link = Core.components.Link;
+const Form = Core.components.Form;
 
-var callMeMaybe = require('../methods/call-maybe');
+class Hello extends React.Component {
 
-var Link = React.createFactory(Core.components.Link);
-var Form = React.createFactory(Core.components.Form);
-
-var Hello = React.createClass({
-  displayName: "Hello",
-
-  render: function () {
+  render() {
     return (
-      React.createElement("div", null,
-        React.createElement("h1", null, "Hello " + this.props.world + " because classic FooBar stuff"),
-        React.createElement("ul", null,
-          React.createElement("li", null, Link({href: "/world/Matt"}, "Hello Matt")),
-          React.createElement("li", null, Link({href: "/world/Yoli"}, "Hello Yoli"))
-        ),
+      <div>
+        <h1>Hello {this.props.world} because classic FooBarr stuff</h1>
+        <ul>
+          <li><Link href="/world/Matt">Hello Matt</Link></li>
+          <li><Link href="/world/World">Hello World</Link></li>
+        </ul>
 
-        Form({method: callMeMaybe},
-          React.createElement("input", {type: 'text', name: 'test'}),
-          React.createElement("input", {type: 'submit', value: 'Try Test'})
-        )
-      )
+        <Form method={callMeMaybe}>
+          <input type="text" name="test" />
+          <input type="submit" value="Try Test" />
+        </Form>
+      </div>
     );
   }
-});
+};
 
 module.exports = Hello;

@@ -6,7 +6,7 @@ var BaseStore = require('core/base-store');
 var Validator = require('core/validator');
 
 // sometimes, we do the same on the client as the server
-var ServerQuery - require('core/query');
+var ServerQuery = require('core/factories/query');
 
 function createQueryHandler(internalStore, options) {
   // perform the query

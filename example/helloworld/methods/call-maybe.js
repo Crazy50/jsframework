@@ -12,6 +12,7 @@ module.exports = Method({
   client: {
     handler: function(result) {
       console.log('got result:', result);
+      // TODO: how to get a redirect in here?
     }
   },
 
