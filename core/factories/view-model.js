@@ -172,8 +172,7 @@ function createFetchWrapper(options) {
             '', // TODO: need to figure out what users can set for CSS and JS
             '',
             ReactDOM.renderToString(Layout(null, View(props))),
-            result,
-            Core.serializeStores()
+            result
           );
         } else {
           response.send(result);

@@ -1,9 +1,0 @@
-{
-  "name": "jsf-memory-store",
-  "version": "0.0.1",
-  "main": "index.js",
-  "author": "Matthew Hall",
-  "license": "ISC",
-  "dependencies": {
-  }
-}

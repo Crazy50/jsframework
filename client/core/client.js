@@ -20,18 +20,6 @@ var Client = function Client() {
   // TODO: need to load the stores
   // pre-load the current route/view
   // how to skip a re-fetch? already had the data anyway
-  if (window.stores) {
-    for (var p in Core.stores) {
-      var store = Core.stores[p];
-      var storename = store.name;
-      if (window.stores[storename]) {
-        console.log('preload', storename, 'with:', window.stores[storename]);
-        store.data = window.stores[storename];
-      }
-    }
-    window.stores = null;
-  }
-
   Client.prefetch = window.prefetch;
   window.prefetch = null;
 
