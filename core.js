@@ -25,6 +25,16 @@ var Core = function() {
 
   return Core;
 };
+Core.Factory = {
+  'Error': require('./core/factories/error')
+}
+
+var errors = require('./core/errors/');
+for (var errortype in errors) {
+  global[errortype] = errors[errortype];
+}
+
+Core.Errors = require('./core/errors')
 
 Core.router = new TrieRouter();
 Core.server = Server();

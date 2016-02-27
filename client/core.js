@@ -25,9 +25,18 @@ var Core = {
   router: new TrieRouter(),
   client: Client,
   components: require('../components/'),
-  rest: require('./core/rest')
+  rest: require('./core/rest'),
+
+  Factory: {
+    'Error': require('core/factories/error')
+  }
 };
 global.Core = Core;
+
+var errors = require('core/errors/');
+for (var errortype in errors) {
+  global[errortype] = errors[errortype];
+}
 
 global.Type = require('core/factories/type');
 global.Method = require('core/factories/method');
