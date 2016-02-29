@@ -10,7 +10,7 @@ var Server = require('./core/server');
 var TrieRouter = require('./router/router');
 
 var Core = function() {
-  Core.BaseStore = require('./core/base-store');
+  //Core.BaseStore = require('./core/base-store');
 
   global.Type = require('./core/factories/type');
   global.Method = require('./core/factories/method');
@@ -26,9 +26,9 @@ var Core = function() {
   return Core;
 };
 
+Core.viewEngine = require('./view-engines/react/');
 Core.router = new TrieRouter();
 Core.server = Server();
-Core.components = require('./components/');
 
 global.Core = Core;
 module.exports = Core;

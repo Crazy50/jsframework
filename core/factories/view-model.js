@@ -1,8 +1,6 @@
 'use strict';
 
 var Bluebird = require('bluebird');
-var React = require('react');
-var ReactDOM = require('react-dom/server');
 var Core = global.Core;
 
 var Validator = require('../validator')
@@ -142,8 +140,7 @@ function createFetchWrapper(options) {
 
   var propsTransform = options.view.props || defaultPropTransform;
 
-  var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
-  var View = React.createFactory(options.view.file);
+  var renderToString = Core.viewEngine.makeRenderer(options.view.file);
 
   var errorHandler = options.errorHandler;
 
@@ -171,7 +168,7 @@ function createFetchWrapper(options) {
             pageMeta.bind(request)(result),
             '', // TODO: need to figure out what users can set for CSS and JS
             '',
-            ReactDOM.renderToString(Layout(null, View(props))),
+            renderToString(props),
             result
           );
         } else {

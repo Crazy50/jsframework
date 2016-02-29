@@ -24,8 +24,9 @@ var Client = require('./core/client');
 var Core = {
   router: new TrieRouter(),
   client: Client,
-  components: require('../components/'),
-  rest: require('./core/rest')
+  rest: require('./core/rest'),
+
+  viewEngine: require('../view-engines/react/client')
 };
 global.Core = Core;
 
