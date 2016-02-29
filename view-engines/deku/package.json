@@ -1,0 +1,14 @@
+{
+  "name": "deku-viewengine",
+  "version": "0.0.1",
+  "description": "Deku based view engine for a POC framework",
+  "main": "index.js",
+  "browser": {
+    "index.js": "client.js"
+  },
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "deku": "2.0.0-rc16"
+  }
+}

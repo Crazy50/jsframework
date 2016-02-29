@@ -2,8 +2,6 @@
 
 var Bluebird = require('bluebird');
 var axios = require('axios');
-var React = require('react');
-var ReactDOM = require('react-dom');
 var Core = global.Core;
 
 function defaultPropTransform(props) {
@@ -50,8 +48,7 @@ function createFetchWrapper(options) {
     pageTitle = titleFetcher(pageTitle);
   }
 
-  var Layout = options.layout ? React.createFactory(options.layout) : defaultLayout;
-  var View = React.createFactory(options.view.file);
+  var renderer = Core.viewEngine.makeRenderer(options.view.file);
 
   return function wrappedFetch(request, next) {
     // check ACL ? but ACL could only be securely checked server side
@@ -85,10 +82,7 @@ function createFetchWrapper(options) {
         // maybe we make users load all the CSS and JS they need app-wide?
         document.title = pageTitle.bind(request)(result);
 
-        ReactDOM.render(
-          Layout(null, View(props)),
-          document.getElementById('bodymount')
-        );
+        renderer(props);
       })
       .catch(function(error) {
         // TODO: gotta make sure that options has the error handler set then

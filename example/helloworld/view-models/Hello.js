@@ -2,12 +2,14 @@
 
 var Bluebird = require('bluebird');
 
+var helloView = require('../views/Hello')
+
 ViewModel({
   url: '/',
   pageTitle: 'Hello world!',
 
   view: {
-    file: require('../views/Hello'),
+    file: helloView,
     props: function(world) {
       return {world: 'world(default)'};
     }
@@ -28,7 +30,7 @@ ViewModel({
     }
   },
   view: {
-    file: require('../views/Hello'),
+    file: helloView,
     props: function(world) {
       return {world: world};
     }
