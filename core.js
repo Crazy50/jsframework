@@ -10,8 +10,6 @@ var Server = require('./core/server');
 var TrieRouter = require('./router/router');
 
 var Core = function() {
-  //Core.BaseStore = require('./core/base-store');
-
   global.Type = require('./core/factories/type');
   global.Method = require('./core/factories/method');
   global.ViewModel = require('./core/factories/view-model');

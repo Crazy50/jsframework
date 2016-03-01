@@ -97,7 +97,7 @@
     i2Node.children = this.children;
     i2Node.handlers = this.handlers;
 
-    this.str = result.node.str.slice(0, splitLocation);
+    this.str = this.str.slice(0, splitLocation);
     this.clearChildren();
     this.insertChild(i2Node);
     this.handlers = {};
