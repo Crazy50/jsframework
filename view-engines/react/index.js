@@ -3,12 +3,23 @@
 var React = require('react');
 var ReactDOM = require('react-dom/server');
 
-module.exports.makeRenderer = function makeRenderer(renderable) {
-  var View = React.createFactory(renderable);
-
-  return function renderToString(props) {
-    return ReactDOM.renderToString(View(props));
+module.exports = function reactViewEngine(Core) {
+  // TODO: would be good to allow multiple view engines, but need Config first
+  if (Core.viewEngine) {
+    return Core;
   }
+
+  Core.viewEngine = {
+    makeRenderer: function makeRenderer(renderable) {
+      var View = React.createFactory(renderable);
+
+      return function renderToString(props) {
+        return ReactDOM.renderToString(View(props));
+      };
+    }
+  };
+
+  return Core;
 };
 
 module.exports.React = React;

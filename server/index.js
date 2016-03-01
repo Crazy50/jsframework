@@ -12,9 +12,15 @@ var CoreRequest = require('./request');
 
 // TODO: how to let users include more middlewares? maybe disable?
 // TODO: also logging
-var Server = function Server() {
+var Server = function Server(Core) {
+  if (Core.Server) {
+    return Core;
+  }
+
   var app = express();
-  Server.app = app;
+  Core.Server = {
+    app: app
+  };
 
   // public files
   app.use('/public', express.static(path.resolve(process.cwd(), 'public')));
@@ -40,7 +46,12 @@ var Server = function Server() {
     res.status(500).send(JSON.stringify(err, null, 2));
   });
 
-  return Server;
+  Core.queueToStart(function() {
+    // TODO: getting portnumber from the config system
+    app.listen(portNumber || 3000);
+  });
+
+  return Core;
 }
 
 function _handler(req, res, next) {
@@ -97,11 +108,6 @@ function _handler(req, res, next) {
   }
 
   handlers[method](request, res, next);
-};
-
-Server.listen = function listen(portNumber, callback) {
-  Server.app.listen(portNumber, callback);
-  return Server;
 };
 
 module.exports = Server;

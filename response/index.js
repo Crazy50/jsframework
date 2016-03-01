@@ -31,11 +31,12 @@ var Response = function Response(options) {
   this.response = options.response;
 };
 
-Response.prototype.redirect = function redirect() {
+Response.prototype.redirect = function redirect(location) {
+  this.response.redirect(location);
 };
 
 Response.prototype.respond = function respond(options) {
-  var statusCode = options.statusCode || 200;
+  // TODO: status code
   var result = options.result;
 
   if (request.isFullRequest) {
@@ -55,7 +56,18 @@ Response.prototype.respond = function respond(options) {
       result
     );
   } else {
-    this.response.send(result);
+    this.response.send(result || {});
+  }
+};
+
+Response.prototype.postRespond = function postRespond(options) {
+  var result = options.result;
+
+  if (request.isFullRequest) {
+    var redirectTo = options.redirectTo || '/';
+    this.response.redirect(redirectTo);
+  } else {
+    this.response.send(result || {});
   }
 };
 

@@ -10,7 +10,7 @@ var Client = function Client(Core) {
     return Core;
   }
 
-  Client.history = useQueries(createHistory)();
+  var history = useQueries(createHistory)();
   // TODO: cookies
   // session
   // Flash
@@ -20,13 +20,18 @@ var Client = function Client(Core) {
   // TODO: need to load the stores
   // pre-load the current route/view
   // how to skip a re-fetch? already had the data anyway
-  Client.prefetch = window.prefetch;
+
+  Core.Client = {
+    history: history,
+    prefetch: window.prefetch
+  };
+
   window.prefetch = null;
 
-  // setting listener must be last, since the current route will act immediately
-  Client.stopHistory = Client.history.listen(_handler);
-
-  Core.Client = Client;
+  Core.queueToStart(function() {
+    // setting listener must be last, since the current route will act immediately
+    Core.Client.stopHistory = history.listen(_handler);
+  });
 
   return Core;
 };
