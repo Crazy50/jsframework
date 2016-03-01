@@ -1,15 +1,15 @@
-var axios = require('axios');
-
 var historyModule = require('history');
 var createHistory = historyModule.createHistory;
 var useQueries = historyModule.useQueries;
 
-var CoreRequest = require('../../core/request');
-var CoreResponse = require('./response');
+var Request = require('../request/');
+var RespondWith = require('../respond-with');
 
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+var Client = function Client(Core) {
+  if (Core.Client) {
+    return Core;
+  }
 
-var Client = function Client() {
   Client.history = useQueries(createHistory)();
   // TODO: cookies
   // session
@@ -26,8 +26,18 @@ var Client = function Client() {
   // setting listener must be last, since the current route will act immediately
   Client.stopHistory = Client.history.listen(_handler);
 
-  return Client;
+  Core.Client = Client;
+
+  return Core;
 };
+
+function _finalHandler(err) {
+  if (err) {
+    // TODO: the handling of errors
+    console.log(err);
+    console.log('the main error handler');
+  }
+}
 
 function _handler(location) {
   var path = location.pathname;
@@ -74,14 +84,7 @@ function _handler(location) {
     return;
   }
 
-  handlers[method](request, function(err) {
-    if (err) {
-      console.log(err);
-      console.log('the main error handler');
-    } else {
-      console.log('the 404 handler');
-    }
-  });
+  handlers[method](request, respondWith, _finalHandler);
 }
 
 module.exports = Client;

@@ -1,72 +1,33 @@
 'use strict';
 
-var Bluebird = require('bluebird');
-var Core = global.Core;
-
-var Validator = require('../validator')
-
-// const Remove = Method({
-//   params: [
-//     {
-//       name: 'item',
-//       type: Todo
-//     }
-//   ],
-//
-//   acl: {} // TODO: build the ACL
-//
-//   client: {
-//     handler: function(promise) { promise.then(...).catch(...); },
-//   },
-//
-//   server: {
-//     method: 'post',
-//     url: '/removetodo',
-//     redirectPost: '/'
-//   },
-//   handler: function() {
-//     return TodoTable.get(this.params.item.id).delete();
-//   }
-// });
-
-function plainRedirect(redirecto) {
-  return function() {
-    return redirecto;
-  }
-}
+var createApiCaller = require('../api-caller');
 
 // TODO: refactor to be more compositional
-function createHandlerWrapper(options) {
-  var handler = options.isAsync ? Bluebird.coroutine(options.handler) : options.handler;
+function createHandlerWrapper(caller, options) {
   var transform = options.outputTransform || JSON.stringify;
-
-  var redirecter = options.server.redirectPost;
-  if (!(redirecter instanceof Function)) {
-    redirecter = plainRedirect(redirecter);
-  }
-
-  var paramValidator = Validator({
-    params: options.params,
-    strict: false
-  });
 
   // TODO: this doesn't work for direct calling though
   return function wrappedHandler(request, response) {
     // check ACL
     // check param types and validators
-    var validationErrors = paramValidator(request.params);
-    if (validationErrors) {
-      // TODO: better error pages
-      response.status(400).send(validationErrors);
-      return;
-    }
+    // var validationErrors = paramValidator(request.params);
+    // if (validationErrors) {
+    //   // TODO: better error pages
+    //   response.status(400).send(validationErrors);
+    //   return;
+    // }
 
     // call the handler
-    handler.bind(request)()
+    caller(request, response)
       .then(function(result) {
+        // TODO: how to handle responding for this...
         if (request.isFullRequest && options.server.redirectPost) {
           // TODO: what should default be? or maybe force something to exist?
-          var redirectTo = redirecter.bind(request)(result) || '/';
+          var redirectTo = options.server.redirectPost || '/';
+          if (redirectTo instanceof Function) {
+            redirectTo = redirectTo(results);
+          }
+
           response.redirect(redirectTo);
         } else {
           response.send(result !== undefined ? transform(result) : {});
@@ -93,8 +54,17 @@ var Method = function(options) {
 
   // if server, set up the routes and/or RPC calls
   // core.server only exists on the server side
-  var handler = createHandlerWrapper(options);
+  var caller = createApiCaller(options);
+
+  var handler = createHandlerWrapper(caller, options);
   handler.server = options.server;
+
+  // TODO:
+  // var paramValidator = Validator({
+  //   params: options.params,
+  //   strict: false
+  // });
+
 
   if (options.server) {
     // assume Methods come over post if not specified
