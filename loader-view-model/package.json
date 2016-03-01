@@ -1,0 +1,15 @@
+{
+  "name": "lagann-loader-view-model",
+  "version": "0.0.1",
+  "description": "A Lagann module for auto-loading all ViewModels",
+  "main": "index.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "optional-all": "file:../optional-all/"
+  },
+  "peerDependencies": {
+    "lagann-core": "*",
+    "lagann-factory-view-model": "*"
+  }
+}

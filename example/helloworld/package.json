@@ -1,0 +1,19 @@
+{
+  "name": "lagann-example-helloworld",
+  "version": "0.0.1",
+  "description": "Just a helloworld style example",
+  "main": "server.js",
+  "browser": "client.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "babel-core": "6.5.2",
+    "babel-loader": "6.2.3",
+    "babel-preset-es2015": "6.5.0",
+    "babel-preset-react": "6.5.0",
+    "babel-register": "6.5.2",
+    "bluebird": "3.3.3",
+    "lagann-bundle-express-react": "file:../../bundles/express-react/",
+    "webpack": "1.12.13"
+  }
+}

@@ -2,7 +2,7 @@
 
 var Bluebird = require('bluebird');
 
-module.exports = Method({
+module.exports = Core.Factories.Method({
   name: 'callmemaybe',
 
   params: {
@@ -24,8 +24,8 @@ module.exports = Method({
     }
   },
 
-  handler: function() {
-    console.log('call-me-maybe:', this.params.test);
-    return Promise.resolve(this.params.test);
+  handler: function(params) {
+    console.log('call-me-maybe:', params.test);
+    return Promise.resolve(params.test);
   }
 });

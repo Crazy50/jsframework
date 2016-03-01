@@ -6,8 +6,7 @@ var h = Deku.h;
 function createClickLink(href) {
   return function clickLink(event) {
     event.preventDefault();
-    console.log(href);
-    Core.client.history.push(href);
+    Core.Client.history.push(href);
   }
 }
 

@@ -2,8 +2,8 @@ var historyModule = require('history');
 var createHistory = historyModule.createHistory;
 var useQueries = historyModule.useQueries;
 
-var Request = require('../request/');
-var RespondWith = require('../respond-with');
+var Request = require('lagann-request');
+var Response = require('lagann-response');
 
 var Client = function Client(Core) {
   if (Core.Client) {
@@ -40,6 +40,7 @@ function _finalHandler(err) {
   if (err) {
     // TODO: the handling of errors
     console.log(err);
+    console.log(err.stack);
     console.log('the main error handler');
   }
 }
@@ -52,7 +53,7 @@ function _handler(location) {
   // TODO: figure out query strings and optionals/validation
   var routeInfo = Core.router.handle(method, path);
 
-  var request = new CoreRequest({
+  var request = new Request({
     request: location,
 
     // TODO: the cookies?
@@ -73,6 +74,10 @@ function _handler(location) {
     isClient: true,
     isFullRequest: false
   });
+  var response = new Response({
+    request: request,
+    response: null
+  })
 
   if (!routeInfo) {
     // TODO: need configurable 404s and other errors, especially client side
@@ -89,7 +94,7 @@ function _handler(location) {
     return;
   }
 
-  handlers[method](request, respondWith, _finalHandler);
+  handlers[method](request, response, _finalHandler);
 }
 
 module.exports = Client;

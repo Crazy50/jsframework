@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = function createHandlerWrapper(handler, options) {
-  var wrapper = function serverMethodHandler(request, response) {
-    var action = handler(request.params);
+function createHandlerWrapper(handler, options) {
+  var wrapper = function serverMethodHandler(params) {
+    var action = handler(params);
 
     if (options.client.handler) {
       action.then(function(results) {
@@ -13,5 +13,12 @@ module.exports = function createHandlerWrapper(handler, options) {
     action.catch(function(error) {
       // TODO: better error handler
     });
-  }
-};
+
+    return action;
+  };
+
+  return wrapper;
+}
+
+var shared = require('./shared');
+module.exports = shared(createHandlerWrapper);

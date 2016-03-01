@@ -13,11 +13,11 @@ module.exports = function reactViewEngine(Core) {
       return function renderToString(props) {
         return Deku.string.render(Deku.element(renderable, props));
       };
-    }
+    },
+
+    Deku: Deku,
+    Utils: require('./utils/')
   };
 
   return Core;
 };
-
-module.exports.Deku = Deku;
-module.exports.Utils = require('./utils/');

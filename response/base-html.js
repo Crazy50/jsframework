@@ -1,8 +1,8 @@
 'use strict';
 
-module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageScript, content, prefetch) {
+module.exports = function BaseHtml(pageTitle, pageMeta, pageCss, pageScript, content, prefetch) {
   // TODO: maybe dot or something would be better for this
-  response.send(
+  return (
     '<!doctype html>\n'
     + '<html>\n'
       + '<head>\n'
@@ -29,5 +29,5 @@ module.exports = function BaseHtml(response, pageTitle, pageMeta, pageCss, pageS
       + pageScript
       + '</body>\n'
       + '</html>'
-  )
+  );
 }

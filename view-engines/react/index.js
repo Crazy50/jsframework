@@ -16,11 +16,11 @@ module.exports = function reactViewEngine(Core) {
       return function renderToString(props) {
         return ReactDOM.renderToString(View(props));
       };
-    }
+    },
+
+    React: React,
+    Utils: require('./utils/')
   };
 
   return Core;
 };
-
-module.exports.React = React;
-module.exports.Utils = require('./utils/');

@@ -1,8 +1,8 @@
-const React = Core.viewEngine.React;
+const {React, Utils} = Core.viewEngine;
 import callMeMaybe from '../methods/call-maybe';
 
-const Link = Core.viewEngine.Utils.Link;
-const Form = Core.viewEngine.Utils.Form;
+const Link = Utils.Link;
+const Form = Utils.Form;
 
 class Hello extends React.Component {
 

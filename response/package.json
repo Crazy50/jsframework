@@ -1,0 +1,14 @@
+{
+  "name": "lagann-response",
+  "version": "0.0.1",
+  "description": "A response object for use client or express-server side",
+  "main": "index.js",
+  "browser": "client.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "lagann-core": "*"
+  }
+}

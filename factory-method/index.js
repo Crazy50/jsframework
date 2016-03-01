@@ -1,35 +1,39 @@
 'use strict';
 
-var createApiCaller = require('../api-caller');
-var createHandlerWrapper = require('./handler-wrapper');
+function createHandlerWrapper(handler, options) {
+  var transform = options.outputTransform || JSON.stringify;
 
-/*
-  this will:
-    - create wrapper to check ACL, check param types/validation
-    - handle the Promises/generators
-    - register a route if server is enabled
-    - register the method with the RPC system
-    - create or at least set up a way to build the client-side portion
+  var wrapper = function serverMethodHandler(request, response) {
+    handler(request.params)
+      .then(function(result) {
+        var redirectTo = options.server.redirectPost || '/';
+        if (redirectTo instanceof Function) {
+          redirectTo = redirectTo(result);
+        }
 
-*/
-var Method = function(options) {
-  var name = options.name;
+        response.postRespond({
+          redirectTo: redirectTo,
+          result: result
+        });
+      });
+  }
 
-  // if server, set up the routes and/or RPC calls
-  // core.server only exists on the server side
-  var caller = createApiCaller(options);
-  // TODO: so unsure about this, but it's for Forms to have the correct info during non-JS instances
-  caller.server = options.server;
+  // TODO: currently must have server defined to make client work
+  if (options.server) {
+    // assume Methods come over post if not specified
+    var methods = options.server.method || 'post';
+    var url = options.server.url || '/api/' + name;
 
-  var handler = createHandlerWrapper(caller, options);
+    // TODO: along with refactor, clean it up
+    Core.router.add({
+      methods: methods,
+      path: url,
+      handler: wrapper
+    });
+  }
 
-  // TODO:
-  // var paramValidator = Validator({
-  //   params: options.params,
-  //   strict: false
-  // });
+  return handler;
+}
 
-  return caller;
-};
-
-module.exports = Method;
+var shared = require('./shared');
+module.exports = shared(createHandlerWrapper);

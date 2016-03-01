@@ -7,7 +7,7 @@ var Link = React.createClass({
 
   clickLink: function(event) {
     event.preventDefault();
-    Core.client.history.push(this.props.href);
+    Core.Client.history.push(this.props.href);
   },
 
   render: function() {

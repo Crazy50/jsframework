@@ -1,8 +1,9 @@
-const {h} = Core.viewEngine.Deku;
+const {Deku, Utils} = Core.viewEngine;
 import callMeMaybe from '../methods/call-maybe';
 
-const Link = Core.viewEngine.Utils.Link;
-const Form = Core.viewEngine.Utils.Form;
+const h = Deku.h;
+const Link = Utils.Link;
+const Form = Utils.Form;
 
 let Hello = {
   render: ({ props, children, dispatch }) => {

@@ -1,0 +1,15 @@
+{
+  "name": "lagann-loader-method",
+  "version": "0.0.1",
+  "description": "A Lagann module for auto-loading Methods",
+  "main": "index.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "optional-all": "file:../optional-all/"
+  },
+  "peerDependencies": {
+    "lagann-core": "*",
+    "lagann-factory-method": "*"
+  }
+}

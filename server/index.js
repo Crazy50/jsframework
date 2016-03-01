@@ -8,7 +8,8 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var flash = require('connect-flash');
 
-var CoreRequest = require('./request');
+var Request = require('lagann-request');
+var Response = require('lagann-response');
 
 // TODO: how to let users include more middlewares? maybe disable?
 // TODO: also logging
@@ -48,7 +49,7 @@ var Server = function Server(Core) {
 
   Core.queueToStart(function() {
     // TODO: getting portnumber from the config system
-    app.listen(portNumber || 3000);
+    app.listen(3000);
   });
 
   return Core;
@@ -75,7 +76,7 @@ function _handler(req, res, next) {
     }
   }
 
-  var request = new CoreRequest({
+  var request = new Request({
     request: req,
 
     cookies: req.cookies,
@@ -93,6 +94,10 @@ function _handler(req, res, next) {
     isClient: false,
     isFullRequest: !req.xhr && req.accepts('html') === 'html'
   });
+  var response = new Response({
+    request: request,
+    response: res
+  });
 
   if (!routeInfo) {
     // TODO: need configurable 404s and other errors
@@ -107,7 +112,7 @@ function _handler(req, res, next) {
     return next();
   }
 
-  handlers[method](request, res, next);
+  handlers[method](request, response, next);
 };
 
 module.exports = Server;

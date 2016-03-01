@@ -1,0 +1,13 @@
+{
+  "name": "lagann-request",
+  "version": "0.0.1",
+  "description": "A request object for use client or server side",
+  "main": "index.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "lagann-core": "*"
+  }
+}

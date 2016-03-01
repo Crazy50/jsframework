@@ -5,7 +5,9 @@ module.exports = function createApiCaller(options) {
   var handler = options.handler;
 
   if (!handler) {
-    return Promise.resolve();
+    return function() {
+      return Promise.resolve();
+    }
   }
 
   return function(data) {

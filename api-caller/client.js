@@ -5,11 +5,13 @@ axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
 // TODO: prefetching stuff
 module.exports = function createApiCaller(options) {
-  var method = options.method;
+  var method = options.method || 'post';
   var url = options.url;
 
   if (!options.handler) {
-    return Promise.resolve();
+    return function() {
+      return Promise.resolve();
+    };
   }
 
   return function(data) {

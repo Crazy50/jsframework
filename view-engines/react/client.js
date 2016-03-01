@@ -1,7 +1,7 @@
 'use strict';
 
 var React = require('react');
-var ReactDOM = require('react-dom/server');
+var ReactDOM = require('react-dom');
 
 module.exports = function reactViewEngine(Core) {
   // TODO: would be good to allow multiple view engines, but need Config first
@@ -19,11 +19,11 @@ module.exports = function reactViewEngine(Core) {
           document.getElementById('bodymount')
         );
       };
-    }
+    },
+
+    React: React,
+    Utils: require('./utils/')
   };
 
   return Core;
 };
-
-module.exports.React = React;
-module.exports.Utils = require('./utils/');

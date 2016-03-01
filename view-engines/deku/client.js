@@ -14,11 +14,11 @@ module.exports = function reactViewEngine(Core) {
       return function renderToDocument(props) {
         return render(Deku.element(renderable, props));
       };
-    }
+    },
+
+    Deku: Deku,
+    Utils: require('./utils/')
   };
 
   return Core;
 };
-
-module.exports.Deku = Deku;
-module.exports.Utils = require('./utils/');

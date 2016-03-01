@@ -4,7 +4,7 @@ var Bluebird = require('bluebird');
 
 var helloView = require('../views/Hello')
 
-ViewModel({
+Core.Factories.ViewModel({
   url: '/',
   pageTitle: 'Hello world!',
 
@@ -16,7 +16,7 @@ ViewModel({
   }
 });
 
-ViewModel({
+Core.Factories.ViewModel({
   url: '/world/{world}',
   pageTitle: function(world) {
     return 'Hello you: ' + world;
@@ -35,7 +35,7 @@ ViewModel({
       return {world: world};
     }
   },
-  fetch: function() {
-    return Bluebird.resolve(this.params.world);
+  handler: function(params) {
+    return Bluebird.resolve(params.world);
   }
 });

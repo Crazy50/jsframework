@@ -1,0 +1,14 @@
+{
+  "name": "lagann-factory-view-model",
+  "version": "0.0.1",
+  "description": "A Lagann module for creating ViewModels",
+  "main": "index.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "lagann-api-caller": "file:../api-caller"
+  },
+  "peerDependencies": {
+    "lagann-core": "*"
+  }
+}

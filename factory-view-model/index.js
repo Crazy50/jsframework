@@ -1,6 +1,6 @@
 'use strict';
 
-var createApiCaller = require('../api-caller');
+var createApiCaller = require('lagann-api-caller');
 
 // TODO: what about a directory-wide "pre/post" fetch that can fetch common things on pages?
 // or maybe somehow ViewModel extending another ViewModel?
@@ -9,7 +9,7 @@ var createApiCaller = require('../api-caller');
 // would be useful for things like logging response times and just whatever else someone comes up with
 // these handlers could also be used for fetching and solve the above todo
 
-function createHandler(caller, options) {
+function createHandler(options) {
   // TODO: what about server-only fetch capability that requires client to fetch data first?
   var propsTransform = options.view.props || defaultPropTransform;
 
@@ -18,8 +18,16 @@ function createHandler(caller, options) {
     // check param types and validators
     // call the handler
 
+    // TODO: methods will run into this at some point too
+    // late initialize in order to support dynamic paths
+    var caller = createApiCaller({
+      method: request.method,
+      url: request.path,
+      handler: options.handler
+    });
+
     // TODO: any kind of Loading notification?
-    caller(request.query)
+    caller(request.params)
       .then(function(result) {
         var props = options.view.props;
         if (props instanceof Function) {
@@ -39,10 +47,10 @@ function createHandler(caller, options) {
         response.respond({
           pageTitle: pageTitle,
           pageMeta: pageMeta,
-          viewEngine: Core.viewRenderer, // TODO: not the best
+          viewEngine: Core.viewEngine, // TODO: not the best
           result: result,
 
-          view: options.view.filem
+          view: options.view.file,
           props: props
         });
       })
@@ -57,8 +65,6 @@ var ViewModel = function(options) {
   options.method = 'get';
   var url = options.url;
 
-  var caller = createApiCaller(options);
-
 // TOOD:
 /*
 var validationErrors = paramValidator(request.params);
@@ -72,7 +78,7 @@ if (validationErrors) {
   Core.router.add({
     methods: options.method,
     path: url,
-    handler: createHandler(caller, options)
+    handler: createHandler(options)
   });
 };
 

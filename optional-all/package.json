@@ -1,0 +1,12 @@
+{
+  "name": "optional-all",
+  "version": "0.0.1",
+  "description": "A universal utility to optionally load all items in a directory",
+  "main": "index.js",
+  "browser": "client.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "require-all": "2.0.0"
+  }
+}

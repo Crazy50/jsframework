@@ -1,11 +1,9 @@
 {
-  "name": "react-viewengine",
+  "name": "lagann-viewengine-react",
   "version": "0.0.1",
-  "description": "React based view engine for a POC framework",
+  "description": "React based view engine for the Lagann framework",
   "main": "index.js",
-  "browser": {
-    "index.js": "client.js"
-  },
+  "browser": "client.js",
   "author": "Matthew Hall",
   "license": "ISC",
   "dependencies": {

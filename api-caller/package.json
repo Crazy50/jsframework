@@ -1,0 +1,12 @@
+{
+  "name": "lagann-api-caller",
+  "version": "0.0.1",
+  "description": "A Lagann utility for handling universal calls to APIs",
+  "main": "index.js",
+  "browser": "client.js",
+  "author": "Matthew Hall",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "0.9.1"
+  }
+}
