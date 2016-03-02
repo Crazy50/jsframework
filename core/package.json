@@ -1,10 +1,4 @@
 {
-  "name": "lagann-core",
-  "version": "0.0.1",
-  "description": "The Core of Lagann whose drill will pierce the heavens",
   "main": "index.js",
-  "author": "Matthew Hall",
-  "license": "ISC",
-  "dependencies": {
-  }
+  "browser": "client.js"
 }

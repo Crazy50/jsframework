@@ -1,5 +1,5 @@
 {
-  "name": "lagann-example-helloworld",
+  "name": "lagannjs-example-helloworld",
   "version": "0.0.1",
   "description": "Just a helloworld style example",
   "main": "server.js",
@@ -13,7 +13,8 @@
     "babel-preset-react": "6.5.0",
     "babel-register": "6.5.2",
     "bluebird": "3.3.3",
-    "lagann-bundle-express-react": "file:../../bundles/express-react/",
+    "lagannjs": "file:../../",
+    "lagannjs-viewengine-react": "file:../../view-engines/react/",
     "webpack": "1.12.13"
   }
 }

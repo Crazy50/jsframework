@@ -1,8 +1,8 @@
 {
   "name": "lagannjs",
   "version": "0.0.1",
-  "description": "This actually isn't a primary package as everything is split into components",
-  "main": "index.js",
+  "description": "A JS framework that will pierce the heavens",
+  "main": "core.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Crazy50/jsframework.git"
@@ -14,5 +14,15 @@
   },
   "homepage": "https://github.com/Crazy50/jsframework",
   "dependencies": {
+    "axios": "0.9.1",
+    "bluebird": "3.3.1",
+    "body-parser": "1.15.0",
+    "connect-flash": "0.1.1",
+    "cookie-parser": "1.4.1",
+    "express": "4.13.4",
+    "express-session": "1.13.0",
+    "history": "2.0.0",
+    "raw-body": "2.1.5",
+    "require-all": "2.0.0"
   }
 }

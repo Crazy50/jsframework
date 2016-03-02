@@ -3,10 +3,10 @@
 var Deku = require('deku');
 var render = Deku.createApp(document.getElementById('bodymount'));
 
-module.exports = function reactViewEngine(Core) {
+module.exports = function reactViewEngine() {
   // TODO: would be good to allow multiple view engines, but need Config first
   if (Core.viewEngine) {
-    return Core;
+    return;
   }
 
   Core.viewEngine = {
@@ -19,6 +19,4 @@ module.exports = function reactViewEngine(Core) {
     Deku: Deku,
     Utils: require('./utils/')
   };
-
-  return Core;
 };

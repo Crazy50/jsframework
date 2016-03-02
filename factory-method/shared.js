@@ -1,6 +1,6 @@
 'use strict';
 
-var createApiCaller = require('lagann-api-caller');
+var createApiCaller = require('../api-caller');
 
 module.exports = function MethodFactoryFactory(createHandlerWrapper) {
   /*
@@ -35,17 +35,15 @@ module.exports = function MethodFactoryFactory(createHandlerWrapper) {
     return handler;
   };
 
-  return function(Core) {
+  return function() {
     if (Core.Factories) {
       if (Core.Factories.Method) {
-        return Core;
+        return;
       }
     } else {
       Core.Factories = {};
     }
 
     Core.Factories.Method = Method;
-
-    return Core;
   };
 };

@@ -1,6 +1,6 @@
 'use strict';
 
-var createApiCaller = require('lagann-api-caller');
+var createApiCaller = require('../api-caller');
 
 // TODO: what about a directory-wide "pre/post" fetch that can fetch common things on pages?
 // or maybe somehow ViewModel extending another ViewModel?
@@ -82,16 +82,14 @@ if (validationErrors) {
   });
 };
 
-module.exports = function(Core) {
+module.exports = function() {
   if (Core.Factories) {
     if (Core.Factories.ViewModel) {
-      return Core;
+      return;
     }
   } else {
     Core.Factories = {};
   }
 
   Core.Factories.ViewModel = ViewModel;
-
-  return Core;
 };

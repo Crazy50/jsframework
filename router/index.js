@@ -2,12 +2,10 @@
 
 var TrieRouter = require('./router');
 
-module.exports = function(Core) {
+module.exports = function() {
   if (Core.router) {
-    return Core;
+    return;
   }
 
   Core.router = new TrieRouter();
-
-  return Core;
 };

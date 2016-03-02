@@ -1,5 +1,5 @@
 {
-  "name": "lagann-viewengine-react",
+  "name": "lagannjs-viewengine-react",
   "version": "0.0.1",
   "description": "React based view engine for the Lagann framework",
   "main": "index.js",

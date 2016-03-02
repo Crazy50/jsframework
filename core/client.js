@@ -2,12 +2,12 @@ var historyModule = require('history');
 var createHistory = historyModule.createHistory;
 var useQueries = historyModule.useQueries;
 
-var Request = require('lagann-request');
-var Response = require('lagann-response');
+var Request = require('../request');
+var Response = require('../response');
 
-var Client = function Client(Core) {
+var Client = function Client() {
   if (Core.Client) {
-    return Core;
+    return;
   }
 
   var history = useQueries(createHistory)();
@@ -32,8 +32,6 @@ var Client = function Client(Core) {
     // setting listener must be last, since the current route will act immediately
     Core.Client.stopHistory = history.listen(_handler);
   });
-
-  return Core;
 };
 
 function _finalHandler(err) {

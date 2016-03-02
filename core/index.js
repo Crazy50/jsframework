@@ -1,42 +1,116 @@
 'use strict';
 
-// TODO: yep
-function extend(extentionName, dependencies) {
+var path = require('path');
+
+var express = require('express');
+var cookieParser = require('cookie-parser');
+var session = require('express-session');
+var bodyParser = require('body-parser');
+var flash = require('connect-flash');
+
+var Request = require('../request');
+var Response = require('../response');
+
+// TODO: how to let users include more middlewares? maybe disable?
+// TODO: also logging
+var Server = function Server() {
+  if (Core.Server) {
+    return;
+  }
+
+  var app = express();
+  Core.Server = {
+    app: app
+  };
+
+  // public files
+  app.use('/public', express.static(path.resolve(process.cwd(), 'public')));
+
+  // middlewares
+  app.use(cookieParser());
+  app.use(bodyParser.urlencoded({extended: true}));
+  app.use(bodyParser.json());
+  // app.use(session());
+  // app.use(flash());
+
+  // our custom handler
+  app.use(_handler);
+
+  app.use(function(req, res, next) {
+    console.log('not found');
+    res.status(404).send('File not found');
+  });
+  app.use(function(err, req, res, next) {
+    console.log('some error occurred');
+    console.log(err);
+    console.log(err.stack);
+    res.status(500).send(JSON.stringify(err, null, 2));
+  });
+
+  Core.queueToStart(function() {
+    // TODO: getting portnumber from the config system
+    app.listen(3000);
+  });
 }
 
-function queueToStart(fn, allowMultiple) {
-  if (allowMultiple || this._internals.startItems.indexOf(fn) === -1) {
-    this._internals.startItems.push(fn);
-  }
-}
+function _handler(req, res, next) {
+  var path = req.path;
+  var method = req.method.toLowerCase();
 
-// This executes the in reverse order, as it is a queue
-function start() {
-  var startItems = this._internals.startItems;
-  for (var i = startItems.length; i--;) {
-    startItems[i]();
-  }
-}
+  console.log(method, ':', path);
+  // TODO: figure out query strings and optionals/validation
+  var routeInfo = Core.router.handle(method, path);
 
-var defaultCore = {
-  _internals: {
-    startItems: []
+  // TODO: gotta rethink this part
+  // no query params. they're less secure and more for options, not params
+  // if it should be a parameter, use a route/url, not a query param
+  var params = {};
+  for (var prop in req.body) {
+    params[prop] = req.body[prop]
   }
+  if (routeInfo && routeInfo.params) {
+    for (var prop in routeInfo.params) {
+      params[prop] = routeInfo.params[prop]
+    }
+  }
+
+  var request = new Request({
+    request: req,
+
+    cookies: req.cookies,
+    signedCookies: req.signedCookies,
+
+    method: method,
+    path: path,
+    protocol: req.protocol,
+    hostname: req.hostname,
+
+    params: params,
+    query: req.query,
+
+    isServer: true,
+    isClient: false,
+    isFullRequest: !req.xhr && req.accepts('html') === 'html'
+  });
+  var response = new Response({
+    request: request,
+    response: res
+  });
+
+  if (!routeInfo) {
+    // TODO: need configurable 404s and other errors
+    return next();
+  }
+
+  var handlers = routeInfo.route.handlers;
+
+  // TODO: have to get with the method? no bueno
+  if (!handlers || !handlers[method]) {
+    // TODO: need configurable 404s and other errors
+    return next();
+  }
+
+  handlers[method](request, response, next);
 };
-defaultCore.extend = extend.bind(defaultCore);
-defaultCore.queueToStart = queueToStart.bind(defaultCore);
-defaultCore.start = start.bind(defaultCore);
 
-var _internalCore = null;
-
-module.exports = function(Core) {
-  if (Core) {
-    _internalCore = Core;
-  } else {
-    _internalCore = defaultCore;
-  }
-
-  // TODO: any options that are good except globals? and avoiding a bunch of function calls with bundles...
-  global.Core = _internalCore;
-  return _internalCore;
-};
+module.exports = Server;

@@ -3,10 +3,10 @@
 var React = require('react');
 var ReactDOM = require('react-dom/server');
 
-module.exports = function reactViewEngine(Core) {
+module.exports = function reactViewEngine() {
   // TODO: would be good to allow multiple view engines, but need Config first
   if (Core.viewEngine) {
-    return Core;
+    return;
   }
 
   Core.viewEngine = {
@@ -21,6 +21,4 @@ module.exports = function reactViewEngine(Core) {
     React: React,
     Utils: require('./utils/')
   };
-
-  return Core;
 };

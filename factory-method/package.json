@@ -1,15 +1,4 @@
 {
-  "name": "lagann-factory-method",
-  "version": "0.0.1",
-  "description": "A Lagann module for creating Methods",
   "main": "index.js",
-  "browser": "client.js",
-  "author": "Matthew Hall",
-  "license": "ISC",
-  "dependencies": {
-    "lagann-api-caller": "file:../api-caller"
-  },
-  "peerDependencies": {
-    "lagann-core": "*"
-  }
+  "browser": "client.js"
 }
